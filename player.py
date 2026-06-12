@@ -14,7 +14,7 @@ class Direction(Enum):
 
 class Player:
     """
-    Gère la logique et l'état de Pac-Man.
+    Manage stats of pacman
     """
     def __init__(self, start_x: int, start_y: int,
                  starting_lives: int) -> None:
