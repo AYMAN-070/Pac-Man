@@ -18,7 +18,7 @@ class Maze:
         self.width: int = width
         self.height: int = height
         self.seed: int = seed
-        # (0 = empty/path, 1 = wall, 2 = pacgum, 3 = super-pacgum)
+        # (0 = path, 1 = wall, 2 = pacgum, 3 = super-pacgum)
         self.grid: List[List[int]] = []
         self.generate_maze()
 
@@ -85,10 +85,10 @@ class Maze:
         Places pacgums and super-pacgums on the grid according to the rules.
         """
         # Super-pacgums in the 4 corners
-        self.grid[1][1] = 3                                      # Top-Left
-        self.grid[1][self.width - 2] = 3                         # Top-Right
-        self.grid[self.height - 2][1] = 3                        # Bottom-Left
-        self.grid[self.height - 2][self.width - 2] = 3           # Bottom-Right
+        self.grid[1][1] = 3   # Top-Left
+        self.grid[1][self.width - 2] = 3  # Top-Right
+        self.grid[self.height - 2][1] = 3   # Bottom-Left
+        self.grid[self.height - 2][self.width - 2] = 3    # Bottom-Right
         # Pacgums in most corridors
         for y in range(1, self.height - 1):
             for x in range(1, self.width - 1):
