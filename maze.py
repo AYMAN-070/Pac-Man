@@ -46,25 +46,33 @@ class Maze:
 
     def _parse_external_maze(self, raw_maze: Any) -> None:
         """
-        Adapts the output of the external package to our grid format.
+        Adapts the size and content of the external maze intelligently,
         """
-        # This will print the type of the external maze
-        print(f"DEBUG: External generator returned type: {type(raw_maze)}")
-        # CASE A: It is already a 2D list (list of lists)
-        if (isinstance(raw_maze, list) and len(raw_maze) > 0
-                and isinstance(raw_maze[0], list)):
-            self.grid = raw_maze
-            print("DEBUG: Maze loaded from 2D list.")
-        # CASE B: It is a custom Python object holding the grid as an attribute
-        elif hasattr(raw_maze, 'grid'):
-            self.grid = raw_maze.grid
-            print("DEBUG: Maze loaded from '.grid' attribute.")
-        elif hasattr(raw_maze, 'maze'):
-            self.grid = raw_maze.maze
-            print("DEBUG: Maze loaded from '.maze' attribute.")
-        # CASE C: Unknown format. We raise an error
+        temp_grid = []
+        if isinstance(raw_maze, list) and len(raw_maze) > 0:
+            temp_grid = raw_maze
+        elif hasattr(raw_maze, 'grid') and isinstance(raw_maze.grid, list):
+            temp_grid = raw_maze.grid
+        elif hasattr(raw_maze, 'maze') and isinstance(raw_maze.maze, list):
+            temp_grid = raw_maze.maze
         else:
-            raise ValueError(f"Unknown external maze format: {type(raw_maze)}")
+            raise ValueError(f"Unreadable external format: {type(raw_maze)}")
+        # CHECK DIMENSIONS
+        self.height = len(temp_grid)
+        self.width = len(temp_grid[0]) if self.height > 0 else 0
+        if self.height < 5 or self.width < 5:
+            raise ValueError("External maze is too small.")
+        # ADAPT THE CONTENT
+        self.grid = [[0 for _ in range(self.width)]
+                     for _ in range(self.height)]
+        # TRICK: The top-left corner [0][0] is always part of a wall
+        wall_symbol = temp_grid[0][0]
+        for y in range(self.height):
+            for x in range(self.width):
+                if temp_grid[y][x] == wall_symbol:
+                    self.grid[y][x] = 1
+                else:
+                    self.grid[y][x] = 0
 
     def _create_dummy_grid(self) -> None:
         """
