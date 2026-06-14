@@ -40,8 +40,12 @@ class GameEngine:
             seed: int = self.config.settings.get("seed", 42)
         else:
             seed = random.randint(1, 999999)
-        width: int = self.config.settings.get("width", 21)
-        height: int = self.config.settings.get("height", 21)
+        levels_config = self.config.settings.get("level",
+                                                 [{"width": 21, "height": 21}])
+        # SYSTEM de securite si on depasse level max donnee
+        level_index = min(self.current_level - 1, len(levels_config) - 1)
+        width: int = levels_config[level_index].get("width", 21)
+        height: int = levels_config[level_index].get("height", 21)
         self.maze = Maze(width, height, seed)
         # PLACE PLAYER
         start_x: int = width // 2
