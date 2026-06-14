@@ -21,7 +21,6 @@ class GameConfig:
             "points_per_ghost": 200,
             "seed": 42,
             "level_max_time": 90.0,
-            # AJOUT : Le tableau des niveaux demandé par le sujet
             "level": [
                 {"width": 21, "height": 21},  # Niveau 1
                 {"width": 25, "height": 25},  # Niveau 2
