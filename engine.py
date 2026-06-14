@@ -28,6 +28,7 @@ class GameEngine:
         self.maze: Maze
         self.player: Player
         self.ghosts: List[Ghost] = []
+        self.cheat_invincible: bool = False
         # Load the first level
         self.load_level()
 
@@ -93,6 +94,10 @@ class GameEngine:
         # If both directions blocked by walls We stop
         self.player.current_direction = Direction.NONE
 
+    def toggle_invincibility(self) -> None:
+        """ Activate or desactivate cheat mode."""
+        self.cheat_invincible = not self.cheat_invincible
+
     def _check_collisions(self) -> None:
         """
         Checks for collisions between Pac-Man, pacgums, and ghosts.
@@ -116,16 +121,19 @@ class GameEngine:
                 ghost.set_edible()
         # GHOST COLLISIONS
         for ghost in self.ghosts:
+            if ghost.state == GhostState.DEAD:
+                continue
             # If Pac-Man and a Ghost are on the exact same tile
             if ghost.x == px and ghost.y == py:
                 if ghost.state == GhostState.EDIBLE:
-                    # Pac-Man eats the ghost!
+                    # Pac-Man eats the ghost!<
                     self.score += self.config.settings.get("points_per_ghost",
                                                            200)
                     ghost.die()
                 elif ghost.state == GhostState.CHASE:
-                    # The ghost eats Pac-Man!
-                    self.player.lose_life()
+                    if not self.cheat_invincible:
+                        # The ghost eats Pac-Man!
+                        self.player.lose_life()
                     # we reset ghosts to their corners
                     for g in self.ghosts:
                         g.x = g.start_x
