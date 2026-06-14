@@ -3,9 +3,11 @@ import sdl2.ext.image as s2_img
 import sdl2 as s2
 import ctypes
 
+
 class DiplayError(Exception):
     """  """ # TODO
     pass
+
 
 class Display:
     """  """ # TODO
@@ -46,10 +48,9 @@ class Display:
                     break
 
 
-
-
 def test() -> None:
     disp = Display()
     print("created")
+
 
 test()
