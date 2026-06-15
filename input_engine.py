@@ -1,13 +1,25 @@
 
 import sdl2.ext.image as s2_img
+import sdl2.sdlttf as s2_ttf
 import sdl2 as s2
 import ctypes
 from enum import IntEnum
 import sys
 from typing import Callable
 
+from engine import GameEngine
+
 from textures import Textures
 from display import Display
+from player import Direction
+
+
+# MAZE CASES INDICES
+
+NOTHING = 0
+WALL = 1
+PACGUM = 2
+SUPERPACGUM = 3
 
 def limit_fps(start_frame: int, limit: int) -> None:
     ticks = s2.SDL_GetTicks()
@@ -29,15 +41,29 @@ class InputError(Exception):
 class InputEngine:
     """  """  # TODO
 
-    def __init__(self) -> None:
+    def __init__(self, path: str) -> None:
         """  """  # TODO
 
         self.fps_limit = int(1000 / 60)  # = 16 for 60 fps
-        self.hmid:int = int(D.h / 2)
-        self.wmid:int = int(D.w / 2)
+        self.midxy: list[int] = [int(D.w / 2), int(D.h / 2)]
+        self.engine = GameEngine(path)
+        self.player = self.engine.player
+
+        if s2_ttf.TTF_Init() != 0:
+            raise InputError("Error. Can't init SDL_TTF")
+        try:
+            self.font = s2_ttf.TTF_OpenFont(b"assets/MoonAndLatte-vn8LO.ttf", 24)
+            if not self.font:
+                raise InputError("can't load font")
+        except Exception:
+            s2_ttf.TTF_Quit()
+            raise
 
         check = s2.SDL_Init(s2.SDL_INIT_EVERYTHING)
+
         if check != 0:
+            s2_ttf.TTF_CloseFont(self.font)
+            s2_ttf.TTF_Quit()
             raise InputError("Error. Can't init SDL2")
 
         self.window = s2.SDL_CreateWindow(b"Pacman",
@@ -46,6 +72,8 @@ class InputEngine:
                                      D.w, D.h,
                                      s2.SDL_WINDOW_SHOWN | s2.SDL_WINDOW_RESIZABLE)
         if not self.window:
+            s2_ttf.TTF_CloseFont(self.font)
+            s2_ttf.TTF_Quit()
             s2.SDL_Quit()
             raise InputError("Error. Can't init window")
         s2.SDL_SetWindowMinimumSize(self.window, D.w, D.h)
@@ -64,6 +92,8 @@ class InputEngine:
                     s2.SDL_RENDERER_SOFTWARE
             )
         if not self.renderer:
+            s2_ttf.TTF_CloseFont(self.font)
+            s2_ttf.TTF_Quit()
             s2.SDL_DestroyWindow(self.window)
             s2.SDL_Quit()
             raise InputError("Error. Can't init renderer")
@@ -72,11 +102,15 @@ class InputEngine:
         try:
             self.textures = Textures(self.renderer)
             self.t = self.textures.load_textures()
-            self.d = Display(self.renderer, self.t)
+            self.d = Display(self.engine, self.fps_limit,
+                             self.renderer, self.t, self.font,
+                             self.midxy)
             self.process()
         except Exception:
             raise
         finally:
+            s2_ttf.TTF_CloseFont(self.font)
+            s2_ttf.TTF_Quit()
             self.textures.destroy_all()
             s2.SDL_DestroyRenderer(self.renderer)
             s2.SDL_DestroyWindow(self.window)
@@ -102,10 +136,12 @@ class InputEngine:
                 case "menu":
                     mouse_event = self.menu_mouse
                     key_event = lambda *args: None
+                    display = self.d.display_menu
                 case "newgame":
                     print("ng")
                     mouse_event = lambda *args: None
                     key_event = self.newgame_keys
+                    display = self.d.display_game
 
 
     def core_while(
@@ -119,8 +155,6 @@ class InputEngine:
         game = True
 
         fps_limit = self.fps_limit
-        wmid = self.wmid
-        hmid = self.hmid
         while game:
             start_frame = s2.SDL_GetTicks()
 
@@ -131,58 +165,58 @@ class InputEngine:
                         return "quit"
                     case s2.SDL_WINDOWEVENT:
                         if event.window.event == s2.SDL_WINDOWEVENT_RESIZED:
-                            wmid = int(event.window.data1 / 2)
-                            hmid = int(event.window.data2 / 2)
+                            self.midxy[0] = int(event.window.data1 / 2)
+                            self.midxy[1] = int(event.window.data2 / 2)
                     case s2.SDL_MOUSEBUTTONUP:
-                        res = mousebuttonup(event, wmid)
+                        res = mousebuttonup(event)
                         if res:
                             return res
                     case s2.SDL_KEYDOWN:
                         res = keydown(event)
                         if res:
                             return res
-
-            display(wmid)
+            display()
             limit_fps(start_frame, fps_limit)
 
     def newgame_keys(self, event) -> str:
         """  """ #  TODO
-        print("NEW GAME")
-        return ""
+        print(event.key.keysym.sym, "button")
+        match event.key.keysym.sym:
+            case s2.SDLK_UP | s2.SDLK_w:
+                print("u")
+                self.player.next_direction = Direction.UP
+            case s2.SDLK_RIGHT | s2.SDLK_d:
+                print("r")
+                self.player.next_direction = Direction.RIGHT
+            case s2.SDLK_DOWN | s2.SDLK_s:
+                print("d")
+                self.player.next_direction = Direction.DOWN
+            case s2.SDLK_LEFT | s2.SDLK_a:
+                print("l")
+                self.player.next_direction = Direction.LEFT
 
-    def menu_mouse(self, event, wmid) -> str:
+
+    def menu_mouse(self, event) -> str:
         """  """ #  TODO
 
         if event.button.button == s2.SDL_BUTTON_LEFT:
             act = self.check_button(
-                                    wmid, event.button.x,
+                                    event.button.x,
                                     event.button.y)
             if act:
                 return act
 
-    def check_button(self, wmid: int, x: int, y: int) -> str:
-        button = self.d.get_buttons(wmid)
+    def check_button(self, x: int, y: int) -> str:
+        button = self.d.get_buttons()
         for option in button.keys():
             if button[option]['lu'][0] < x < button[option]['rd'][0]:
                 if button[option]['lu'][1] < y < button[option]['rd'][1]:
                     return str(option)
         return ""
 
-    def test(self) -> None:
-        """  """ #  TODO
-
-        windowsurface = s2.SDL_GetWindowSurface(self.window)
-        image = s2_img.load_img(b"Untitled.png")
-        if not image:
-            raise DiplayError("image asset corupted")
-        s2.SDL_BlitSurface(image, None, windowsurface, None)
-
-        s2.SDL_UpdateWindowSurface(self.window)
-        s2.SDL_FreeSurface(image)
-
 
 def testing() -> None:  # TODO
-    i_e = InputEngine()
+    i_e = InputEngine(sys.argv[1])
     print("created")
 
 

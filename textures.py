@@ -16,6 +16,11 @@ TEXTURES_PATH = [
         "menu_scores.png",
         "menu_instructions.png",
         "menu_exit.png",
+        "wall.png",
+        "pacman1.png",
+        "fantom.png",
+        "pacgum.png",
+        "megapacgum.png",
 ]
 
 class Textures:
