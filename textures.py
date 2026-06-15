@@ -10,11 +10,12 @@ class TextureError(Exception):
     pass
 
 TEXTURES_PATH = [
-        "images/menu_title.png",
-        "images/menu_newgame.png",
-        "images/menu_scores.png",
-        "images/menu_instructions.png",
-        "images/menu_exit.png",
+        "assets/",
+        "menu_title.png",
+        "menu_newgame.png",
+        "menu_scores.png",
+        "menu_instructions.png",
+        "menu_exit.png",
 ]
 
 class Textures:
@@ -29,8 +30,8 @@ class Textures:
     def load_textures(self) -> None:
         """  """  # TODO
         try:
-            for path in TEXTURES_PATH:
-                self.create_texture(path)
+            for path in TEXTURES_PATH[1:]:
+                self.create_texture(TEXTURES_PATH[0] + path)
         except Exception:
             self.destroy_all()
             raise

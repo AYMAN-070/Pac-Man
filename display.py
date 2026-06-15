@@ -2,6 +2,7 @@
 import sdl2.ext.image as s2_img
 import sdl2 as s2
 import ctypes
+from typing import Any
 
 
 class DiplayError(Exception):
@@ -12,45 +13,72 @@ class DiplayError(Exception):
 class Display:
     """  """ # TODO
 
-    def __init__(self) -> None:
+    def __init__(self, renderer: Any, textures: dict[str, Any]) -> None:
         """  """ # TODO
-        s2.SDL_Init(s2.SDL_INIT_VIDEO)
-        self.window = s2.SDL_CreateWindow(b"HELLO GUYS",
-                                     s2.SDL_WINDOWPOS_CENTERED,
-                                     s2.SDL_WINDOWPOS_CENTERED,
-                                     592, 460, s2.SDL_WINDOW_SHOWN)
-        try:
-            self.process()
-        except Exception:
-            raise
-        finally:
-            s2.SDL_DestroyWindow(self.window)
-            s2.SDL_Quit()
+        self.renderer = renderer
+        self.t = textures
 
-    def process(self) -> None:
-        """  """ # TODO
+    def display_menu(self, wmid: int) -> None:
+        """  """ #  TODO
+        s2.SDL_RenderClear(self.renderer)
 
-        windowsurface = s2.SDL_GetWindowSurface(self.window)
-        image = s2_img.load_img(b"Untitled.png")
-        if not image:
-            raise DiplayError("wrong image")
-        s2.SDL_BlitSurface(image, None, windowsurface, None)
+        jump = 200
+        pading = 200
+        w = 400
+        h = 200
+        pos_w = int(wmid -  (w/ 2))
 
-        s2.SDL_UpdateWindowSurface(self.window)
-        s2.SDL_FreeSurface(image)
+        dst = s2.SDL_Rect(int(wmid -  (800 / 2)), -50, 800, 500)
+        s2.SDL_RenderCopy(self.renderer, self.t['menu_title'], None, dst)
 
-        runing = True
-        event = s2.SDL_Event()
-        while  runing:
-            while s2.SDL_PollEvent(ctypes.byref(event)) != 0:
-                if event.type == s2.SDL_QUIT:
-                    runing = False
-                    break
+        dst = s2.SDL_Rect(pos_w, jump + pading, w, h)
+        s2.SDL_RenderCopy(self.renderer, self.t['menu_newgame'], None, dst)
 
+        dst = s2.SDL_Rect(pos_w, jump + pading * 2, w, h)
+        s2.SDL_RenderCopy(self.renderer, self.t['menu_scores'], None, dst)
 
-def test() -> None:
-    disp = Display()
-    print("created")
+        dst = s2.SDL_Rect(pos_w, jump + pading * 3, w, h)
+        s2.SDL_RenderCopy(self.renderer, self.t['menu_instructions'], None, dst)
 
+        dst = s2.SDL_Rect(int(wmid -  ((w - 100)/ 2)), jump + pading * 4, w - 100, h - 80)
+        s2.SDL_RenderCopy(self.renderer, self.t['menu_exit'], None, dst)
 
-test()
+        s2.SDL_RenderPresent(self.renderer)
+
+    def get_buttons(self, wmid) -> dict[str, Any]:
+        """  """ #  TODO
+        data = dict()
+
+        jump = 210
+        pading = 200
+        w = 400
+        h = 200
+        pos_w = int(wmid -  (w/ 2))
+
+        w_lu = wmid - 155  # left up
+        w_rd = wmid + 155  # right down
+
+        h_lu = jump + pading
+        h_rd = h_lu + 180
+        inside = {"lu": (w_lu, h_lu), "rd": (w_rd, h_rd)}
+        data.update({"newgame": inside})
+
+        h_lu = jump + pading * 2
+        h_rd = h_lu + 180
+        inside = {"lu": (w_lu, h_lu), "rd": (w_rd, h_rd)}
+        data.update({"scores": inside})
+
+        h_lu = jump + pading * 3
+        h_rd = h_lu + 180
+        inside = {"lu": (w_lu, h_lu), "rd": (w_rd, h_rd)}
+        data.update({"instructions": inside})
+
+        h_lu = jump + pading * 4
+        h_rd = h_lu + 110
+        inside = {"lu": (w_lu, h_lu), "rd": (w_rd, h_rd)}
+        data.update({"exit": inside})
+
+        return data
+
+    def display_game(self) -> None:
+        """  """ #  TODO

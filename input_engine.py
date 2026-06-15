@@ -6,6 +6,14 @@ from enum import IntEnum
 import sys
 
 from textures import Textures
+from display import Display
+
+def limit_fps(start_frame: int, limit: int) -> None:
+    ticks = s2.SDL_GetTicks()
+   
+    if start_frame + limit > ticks:
+        # TOO EARLY
+        s2.SDL_Delay(start_frame + limit - ticks)
 
 class D(IntEnum):  # DEFAULT
     """  """  # TODO
@@ -30,8 +38,6 @@ class InputEngine:
         check = s2.SDL_Init(s2.SDL_INIT_EVERYTHING)
         if check != 0:
             raise InputError("Error. Can't init SDL2")
-        
-        # self.mode = s2.SDL_DisplayMode()
 
         self.window = s2.SDL_CreateWindow(b"Pacman",
                                      s2.SDL_WINDOWPOS_CENTERED,
@@ -41,6 +47,7 @@ class InputEngine:
         if not self.window:
             s2.SDL_Quit()
             raise InputError("Error. Can't init window")
+        s2.SDL_SetWindowMinimumSize(self.window, D.w, D.h)
 
         try:
             self.renderer = s2.SDL_CreateRenderer(
@@ -64,6 +71,7 @@ class InputEngine:
         try:
             self.textures = Textures(self.renderer)
             self.t = self.textures.load_textures()
+            self.d = Display(self.renderer, self.t)
             self.process()
         except Exception:
             raise
@@ -73,22 +81,19 @@ class InputEngine:
             s2.SDL_DestroyWindow(self.window)
             s2.SDL_Quit()
 
-    def limit_fps(self, limit: int) -> None:
-        ticks = s2.SDL_GetTicks()
-       
-        if limit + self.fps_limit > ticks:
-            # TOO EARLY
-            s2.SDL_Delay(limit + self.fps_limit - ticks)
 
     def process(self) -> None:
         """  """ #  TODO
 
         program = True
 
+        fps_limit = self.fps_limit
+        display_menu = self.d.display_menu
+        wmid = self.wmid
+        hmid = self.hmid
         while program:
             start_frame = s2.SDL_GetTicks()
             
-            self.display_menu()
 
             event = s2.SDL_Event()
             while s2.SDL_PollEvent(event):
@@ -97,42 +102,25 @@ class InputEngine:
                         program = False
                     case s2.SDL_WINDOWEVENT:
                         if event.window.event == s2.SDL_WINDOWEVENT_RESIZED:
-                            self.wmid = int(event.window.data1 / 2)
-                            self.hmid = int(event.window.data2 / 2)
+                            wmid = int(event.window.data1 / 2)
+                            hmid = int(event.window.data2 / 2)
+                    case s2.SDL_MOUSEBUTTONUP:
+                        if event.button.button == s2.SDL_BUTTON_LEFT:
+                            act = self.check_button(
+                                                    wmid, event.button.x,
+                                                    event.button.y)
 
-            self.limit_fps(start_frame)
 
+            display_menu(wmid)
+            limit_fps(start_frame, fps_limit)
 
-    def display_menu(self) -> None:
-        """  """ #  TODO
-        s2.SDL_RenderClear(self.renderer)
-
-        jump = 200
-        pading = 200
-
-        w = 400
-        h = 200
-        pos_w = int(self.wmid -  (w/ 2))
-
-        dst = s2.SDL_Rect(int(self.wmid -  (800 / 2)), -50, 800, 500)
-        s2.SDL_RenderCopy(self.renderer, self.t['menu_title'], None, dst)
-
-        dst = s2.SDL_Rect(pos_w, jump + pading, w, h)
-        s2.SDL_RenderCopy(self.renderer, self.t['menu_newgame'], None, dst)
-
-        dst = s2.SDL_Rect(pos_w, jump + pading * 2, w, h)
-        s2.SDL_RenderCopy(self.renderer, self.t['menu_scores'], None, dst)
-
-        dst = s2.SDL_Rect(pos_w, jump + pading * 3, w, h)
-        s2.SDL_RenderCopy(self.renderer, self.t['menu_instructions'], None, dst)
-
-        dst = s2.SDL_Rect(int(self.wmid -  ((w - 100)/ 2)), jump + pading * 4, w - 100, h - 80)
-        s2.SDL_RenderCopy(self.renderer, self.t['menu_exit'], None, dst)
-
-        s2.SDL_RenderPresent(self.renderer)
-
-    def display_game(self) -> None:
-        """  """ #  TODO
+    def check_button(self, wmid: int, x: int, y: int) -> str:
+        button = self.d.get_buttons(wmid)
+        for option in button.keys():
+            if button[option]['lu'][0] < x < button[option]['rd'][0]:
+                if button[option]['lu'][1] < y < button[option]['rd'][1]:
+                    return str(option)
+        return ""
 
     def test(self) -> None:
         """  """ #  TODO
