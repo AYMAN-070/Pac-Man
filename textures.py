@@ -21,6 +21,11 @@ TEXTURES_PATH = [
         "fantom.png",
         "pacgum.png",
         "megapacgum.png",
+        "level.png",
+        "score.png",
+        "lives.png",
+        "time.png",
+        "sprit_lifes.png",
 ]
 
 class Textures:

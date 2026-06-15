@@ -32,7 +32,7 @@ class D(IntEnum):  # DEFAULT
     """  """  # TODO
 
     w: int = 1600
-    h: int = 1200
+    h: int = 1300
 
 class InputError(Exception):
     """  """  # TODO
@@ -44,7 +44,7 @@ class InputEngine:
     def __init__(self, path: str) -> None:
         """  """  # TODO
 
-        self.fps_limit = int(1000 / 60)  # = 16 for 60 fps
+        self.fps_limit = int(1000 / 10)  # = 16 for 60 fps TODO
         self.midxy: list[int] = [int(D.w / 2), int(D.h / 2)]
         self.engine = GameEngine(path)
         self.player = self.engine.player
@@ -131,7 +131,7 @@ class InputEngine:
                     display
                     )
             match res:
-                case "quit":
+                case "exit":
                     return
                 case "menu":
                     mouse_event = self.menu_mouse
@@ -162,7 +162,7 @@ class InputEngine:
             while s2.SDL_PollEvent(event):
                 match event.type:
                     case s2.SDL_QUIT:
-                        return "quit"
+                        return "exit"
                     case s2.SDL_WINDOWEVENT:
                         if event.window.event == s2.SDL_WINDOWEVENT_RESIZED:
                             self.midxy[0] = int(event.window.data1 / 2)

@@ -9,7 +9,7 @@ import time
 from engine import GameEngine
 from ghost import GhostState
 
-CELL = 150
+CELL = 50
 
 class DiplayError(Exception):
     """  """ # TODO
@@ -34,6 +34,8 @@ class Display:
         self.t = textures
         self.font = font
         self.midxy = midxy
+
+        self.txt_color = s2.SDL_Color(255, 255, 255, 255)
 
     def display_menu(self) -> None:
         """  """ #  TODO
@@ -117,17 +119,44 @@ class Display:
                 dst = s2.SDL_Rect(ghost.x * CELL + padx, ghost.y * CELL + pady, CELL, CELL)
                 s2.SDL_RenderCopy(self.renderer, self.t["fantom"], None, dst)
 
+    def draw_text(self, string: str,
+                  x: int, y: int,
+                  w: int, h: int) -> None:
+
+        surface = s2_ttf.TTF_RenderText_Solid(self.font, string.encode(), self.txt_color)
+        texture = s2.SDL_CreateTextureFromSurface(self.renderer, surface)
+        s2.SDL_FreeSurface(surface)
+        dst = s2.SDL_Rect(x, y, w, h)        
+        s2.SDL_RenderCopy(self.renderer, texture, None, dst)
+        s2.SDL_DestroyTexture(texture)
+
     def draw_infos(self) -> None:
         """  """ #  TODO
 
-        color = s2.SDL_Color(255, 255, 255, 255)
-        surface = s2_ttf.TTF_RenderText_Solid(self.font, b"HelloToa", color)
-        texture = s2.SDL_CreateTextureFromSurface(self.renderer, surface)
-        s2.SDL_FreeSurface(surface)
+        s_score = f"{self.engine.score}"
+        self.draw_text(s_score, self.midxy[0] - 20, 15, len(s_score) * 20, 50)
 
-        dst = s2.SDL_Rect(self.midxy[0] * 2 - 200, 300, 100, 100)
-        s2.SDL_RenderCopy(self.renderer, texture, None, dst)
+        dst = s2.SDL_Rect(self.midxy[0] - 200, 5, 160, 70)        
+        s2.SDL_RenderCopy(self.renderer, self.t["score"], None, dst)
+
+        dst = s2.SDL_Rect(int(self.midxy[0] / 6 - 100), 150, 160, 70)        
+        s2.SDL_RenderCopy(self.renderer, self.t["lives"], None, dst)
         
+        dst = s2.SDL_Rect(int(self.midxy[0] / 3 ), -10, 130, 100)        
+        s2.SDL_RenderCopy(self.renderer, self.t["level"], None, dst)
+
+        dst = s2.SDL_Rect(self.midxy[0] - 400, self.midxy[1] * 2 - 150, 420, 140)        
+        s2.SDL_RenderCopy(self.renderer, self.t["time"], None, dst)
+
+        s_time = f"{round(self.engine.time_left, 2)}"
+        self.draw_text(s_time, self.midxy[0] + 30, self.midxy[1] * 2 - 100, len(s_time) * 20, 50)
+
+        col = self.player.lives - 1
+        row = 0
+        w, h = 150, 300
+        src = s2.SDL_Rect(col * w, row * h, w, h)
+        dst = s2.SDL_Rect(int(self.midxy[0] / 6) + 40, 135, 100, 130)
+        s2.SDL_RenderCopy(self.renderer, self.t['sprit_lifes'], src, dst)
 
     def display_game(self) -> None:
         """  """ #  TODO
@@ -135,12 +164,11 @@ class Display:
         s2.SDL_RenderClear(self.renderer)
         
         self.engine.update(self.delta_time)
-        time.sleep(0.1)
 
         player_distx_0 = (CELL * self.player.x + CELL / 2)
         player_disty_0 = (CELL * self.player.y + CELL / 2)
 
-        if True:
+        if False:
             startx = int(self.midxy[0] - player_distx_0)
             starty = int(self.midxy[1] - player_disty_0)
             posy = starty
