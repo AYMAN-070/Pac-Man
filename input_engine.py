@@ -4,6 +4,7 @@ import sdl2 as s2
 import ctypes
 from enum import IntEnum
 import sys
+from typing import Callable
 
 from textures import Textures
 from display import Display
@@ -84,35 +85,80 @@ class InputEngine:
 
     def process(self) -> None:
         """  """ #  TODO
+        game = True
 
-        program = True
+        mouse_event = self.menu_mouse
+        key_event = lambda *args: None
+        display = self.d.display_menu
+        while game:
+            res = self.core_while(
+                    mouse_event,
+                    key_event,
+                    display
+                    )
+            match res:
+                case "quit":
+                    return
+                case "menu":
+                    mouse_event = self.menu_mouse
+                    key_event = lambda *args: None
+                case "newgame":
+                    print("ng")
+                    mouse_event = lambda *args: None
+                    key_event = self.newgame_keys
+
+
+    def core_while(
+                self,
+                mousebuttonup: Callable[..., str],
+                keydown: Callable[..., str],
+                display:  Callable[..., str]
+                ) -> str:
+        """  """ #  TODO
+
+        game = True
 
         fps_limit = self.fps_limit
-        display_menu = self.d.display_menu
         wmid = self.wmid
         hmid = self.hmid
-        while program:
+        while game:
             start_frame = s2.SDL_GetTicks()
-            
 
             event = s2.SDL_Event()
             while s2.SDL_PollEvent(event):
                 match event.type:
                     case s2.SDL_QUIT:
-                        program = False
+                        return "quit"
                     case s2.SDL_WINDOWEVENT:
                         if event.window.event == s2.SDL_WINDOWEVENT_RESIZED:
                             wmid = int(event.window.data1 / 2)
                             hmid = int(event.window.data2 / 2)
                     case s2.SDL_MOUSEBUTTONUP:
-                        if event.button.button == s2.SDL_BUTTON_LEFT:
-                            act = self.check_button(
-                                                    wmid, event.button.x,
-                                                    event.button.y)
+                        res = mousebuttonup(event, wmid)
+                        if res:
+                            return res
+                    case s2.SDL_KEYDOWN:
+                        res = keydown(event)
+                        if res:
+                            return res
 
-
-            display_menu(wmid)
+            display(wmid)
             limit_fps(start_frame, fps_limit)
+
+    def newgame_keys(self, event) -> str:
+        """  """ #  TODO
+        print("NEW GAME")
+        return ""
+
+    def menu_mouse(self, event, wmid) -> str:
+        """  """ #  TODO
+
+        if event.button.button == s2.SDL_BUTTON_LEFT:
+            act = self.check_button(
+                                    wmid, event.button.x,
+                                    event.button.y)
+            if act:
+                return act
 
     def check_button(self, wmid: int, x: int, y: int) -> str:
         button = self.d.get_buttons(wmid)
