@@ -1,0 +1,247 @@
+from typing import List
+# Assuming you have saved your previous classes in these files:
+from config import GameConfig
+from maze import Maze
+from player import Player
+from player import Direction
+from ghost import Ghost
+from ghost import GhostState
+import random
+
+
+class GameEngine:
+    """
+    The core engine that coordinates the Maze, Player, Ghosts, and Game Rules.
+    """
+
+    def __init__(self, config_path: str) -> None:
+        """
+        Loading the config and setting up level 1.
+        """
+        self.config: GameConfig = GameConfig(config_path)
+        # Game Stats
+        self.score: int = 0
+        self.current_level: int = 1
+        self.is_game_over: bool = False
+        self.is_victory: bool = False
+        # Game Entities
+        self.maze: Maze
+        self.player: Player
+        self.ghosts: List[Ghost] = []
+        self.cheat_invincible: bool = False
+        # Load the first level
+        self.load_level()
+
+    def load_level(self) -> None:
+        """
+        Generates the maze and places the player and ghosts for current level.
+        Level 1 uses a fixed seed. Subsequent levels use a random seed.
+        """
+        if self.current_level == 1:
+            seed: int = self.config.settings.get("seed", 42)
+        else:
+            seed = random.randint(1, 999999)
+        levels_config = self.config.settings.get("level",
+                                                 [{"width": 21, "height": 21}])
+        # SYSTEM de securite si on depasse level max donnee
+        level_index = min(self.current_level - 1, len(levels_config) - 1)
+        width: int = levels_config[level_index].get("width", 21)
+        height: int = levels_config[level_index].get("height", 21)
+        self.maze = Maze(width, height, seed)
+        # PLACE PLAYER
+        start_x: int = width // 2
+        start_y: int = height // 2
+        lives: int = self.config.settings.get("lives", 3)
+        # If it's level 1, we create the player from scratch.
+        # else we only update coordinates so we don't reset lives!
+        if self.current_level == 1:
+            self.player = Player(start_x, start_y, lives)
+        else:
+            self.player.x = start_x
+            self.player.y = start_y
+            self.player.start_x = start_x
+            self.player.start_y = start_y
+        # PLACE GHOSTS
+        self.ghosts = [
+            Ghost(1, 1, 0),  # Top-Left (0 for Red)
+            Ghost(width - 2, 1, 1),  # Top-Right (1 for Pink)
+            Ghost(1, height - 2, 2),      # Bottom-Left (2 for Blue)
+            Ghost(width - 2, height - 2, 3)  # Bottom-Right (3 for Orange)
+        ]
+        self.time_left: float = self.config.settings.get("level_max_time",
+                                                         90.0)
+
+    def _move_player(self) -> None:
+        """
+        Handles Pac-Man's movement on the grid and wall collisions.
+        """
+        # We test the directions in order:'next' one, then 'current' one
+        directions_to_try = [self.player.next_direction,
+                             self.player.current_direction]
+        for direction in directions_to_try:
+            if direction == Direction.NONE:
+                continue
+            # Calculate the target coordinates
+            dx, dy = direction.value
+            target_x = self.player.x + dx
+            target_y = self.player.y + dy
+            # If the desired cell is not a wall, we move!
+            if not self.maze.is_wall(target_x, target_y):
+                self.player.current_direction = direction
+                self.player.x = target_x
+                self.player.y = target_y
+                return
+        # If both directions blocked by walls We stop
+        self.player.current_direction = Direction.NONE
+
+    def toggle_invincibility(self) -> None:
+        """ Activate or desactivate cheat mode."""
+        self.cheat_invincible = not self.cheat_invincible
+
+    def _check_collisions(self) -> None:
+        """
+        Checks for collisions between Pac-Man, pacgums, and ghosts.
+        """
+        # We store the player's position
+        px = self.player.x
+        py = self.player.y
+        # Look at what is on the ground at Pac-Man's exact location
+        current_cell = self.maze.grid[py][px]
+        if current_cell == 2:
+            # Pac-Man ate a normal pacgum
+            self.score += self.config.settings.get("points_per_pacgum", 10)
+            self.maze.grid[py][px] = 0
+        elif current_cell == 3:
+            # Pac-Man ate a Super-pacgum
+            self.score += self.config.settings.get("points_per_super_pacgum",
+                                                   50)
+            self.maze.grid[py][px] = 0
+            # Make all ghosts edible!
+            for ghost in self.ghosts:
+                ghost.set_edible()
+        # GHOST COLLISIONS
+        for ghost in self.ghosts:
+            if ghost.state == GhostState.DEAD:
+                continue
+            # If Pac-Man and a Ghost are on the exact same tile
+            if ghost.x == px and ghost.y == py:
+                if ghost.state == GhostState.EDIBLE:
+                    # Pac-Man eats the ghost!<
+                    self.score += self.config.settings.get("points_per_ghost",
+                                                           200)
+                    ghost.die()
+                elif ghost.state == GhostState.CHASE:
+                    if not self.cheat_invincible:
+                        # The ghost eats Pac-Man!
+                        self.player.lose_life()
+                    # we reset ghosts to their corners
+                    for g in self.ghosts:
+                        g.x = g.start_x
+                        g.y = g.start_y
+                        g.state = GhostState.CHASE
+                    # Check for Game Over condition
+                    if self.player.lives <= 0:
+                        self.is_game_over = True
+                    return
+
+    def _check_win_condition(self) -> None:
+        """
+        Checks if all pacgums (2) and super-pacgums (3) have been eaten.
+        If yes, advances to next level
+        """
+        # We scan the grid to see if any items are left
+        for row in self.maze.grid:
+            if 2 in row or 3 in row:
+                return
+        print(f"Level {self.current_level} Complete!")
+        self.current_level += 1
+        # The subject requires at least 10 levels
+        if self.current_level > 10:
+            self.is_victory = True
+            print("You won the game!")
+        else:
+            # generate a new random maze
+            self.load_level()
+
+    def _get_valid_directions(self, x: int, y: int) -> list:
+        """
+        Returns a list of valid directions.
+        """
+        valid_dirs = []
+        # We test all 4 possible directions
+        for d in [Direction.UP, Direction.DOWN, Direction.LEFT,
+                  Direction.RIGHT]:
+            dx, dy = d.value
+            # If is not a wall, it's a valid move
+            if not self.maze.is_wall(x + dx, y + dy):
+                valid_dirs.append(d)
+        return valid_dirs
+
+    def _move_ghosts(self) -> None:
+        """
+        Handles the autonomous movement of all ghosts based on their state.
+        """
+        for ghost in self.ghosts:
+            if ghost.state == GhostState.DEAD:
+                continue
+            # Find all directions the ghost can legally move to
+            valid_dirs = self._get_valid_directions(ghost.x, ghost.y)
+            if not valid_dirs:
+                continue  # ca arrive pas mais juste par securité
+            # Pick a random valid direction!
+            best_dir = random.choice(valid_dirs)
+            dx, dy = best_dir.value
+            ghost.x += dx
+            ghost.y += dy
+
+    def update(self, delta_time: float) -> None:
+        """
+        The main game loop logic. to update the game state.
+        """
+        if self.is_game_over or self.is_victory:
+            return
+        self.time_left -= delta_time
+        if self.time_left <= 0:
+            self.is_game_over = True
+            print("Time's up! Game Over.")
+            return
+        # Update ghost timers
+        for ghost in self.ghosts:
+            ghost.update_timer(delta_time)
+        # Move Player
+        self._move_player()
+        # Move Ghosts
+        self._move_ghosts()
+        # Player eating pacgums or touching ghosts
+        self._check_collisions()
+        # Check Level Completion
+        self._check_win_condition()
+
+    def get_state(self) -> dict:
+        """
+        Convert game stat to a dict
+        """
+        return {
+            "hud": {
+                "score": self.score,
+                "lives": self.player.lives,
+                "level": self.current_level,
+                "time_left": int(self.time_left),
+                "is_game_over": self.is_game_over,
+                "is_victory": self.is_victory
+            },
+            "maze": self.maze.grid,  # une liste de listes
+            "player": {
+                "x": self.player.x,
+                "y": self.player.y,
+                "direction": self.player.current_direction.name
+            },
+            "ghosts": [
+                {
+                    "color_id": g.color_id,
+                    "x": g.x,
+                    "y": g.y,
+                    "state": g.state.name
+                } for g in self.ghosts
+            ]
+        }
