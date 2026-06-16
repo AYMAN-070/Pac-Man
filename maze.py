@@ -67,13 +67,44 @@ class Maze:
         self.grid = [[0 for _ in range(self.width)]
                      for _ in range(self.height)]
         # TRICK: The top-left corner [0][0] is always part of a wall
-        wall_symbol = temp_grid[0][0]
+        path_symbol = temp_grid[0][0]
         for y in range(self.height):
             for x in range(self.width):
-                if temp_grid[y][x] == wall_symbol:
-                    self.grid[y][x] = 1
-                else:
+                if temp_grid[y][x] == path_symbol:
                     self.grid[y][x] = 0
+                else:
+                    self.grid[y][x] = 1
+        self.carve_center()
+
+    def pattern_42(self) -> None:
+        """Reserve pattern 42 coordinates so that it is not sculpted."""
+        if self.height < 10 or self.width < 10:
+            print("Warning: Maze size too small to draw the 42 pattern")
+            return
+        cx = self.width // 2
+        cy = self.height // 2
+        offsets = {
+            (-3, -2), (-3, -1), (-3, 0), (-2, 0), (-1, 0), (-1, 1), (-1, 2),
+            (1, -2), (2, -2), (3, -2), (3, -1), (3, 0), (2, 0), (1, 0), (1, 1),
+            (1, 2), (2, 2), (3, 2)
+        }
+        self.pattern.update(
+            (cx + dx, cy + dy) for dx, dy in offsets
+            if 0 <= (cx + dx) < self.width and 0 <= (cy + dy) < self.height
+        )
+
+    def carve_center(self) -> None:
+        """Creuse le centre et dessine le logo 42"""
+        center_x = self.width // 2
+        center_y = self.height // 2   
+        # empty center
+        for y in range(center_y - 4, center_y + 5):
+            for x in range(center_x - 6, center_x + 7):
+                if 0 < y < self.height - 1 and 0 < x < self.width - 1:
+                    self.grid[y][x] = 0 
+        self.pattern_42()
+        for x, y in self.pattern:
+            self.grid[y][x] = 1
 
     def _create_dummy_grid(self) -> None:
         """
