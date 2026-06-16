@@ -1,4 +1,5 @@
 from enum import Enum
+from player import Direction
 
 
 class GhostState(Enum):
@@ -56,3 +57,4 @@ class Ghost:
             if self.timer <= 0:
                 self.state = GhostState.CHASE
                 self.timer = 0.0
+                self.current_direction = Direction.NONE
