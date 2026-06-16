@@ -227,6 +227,7 @@ class InputEngine:
                 if button[option]['lu'][1] < y < button[option]['rd'][1]:
                     return str(option)
         return ""
+    
 
     def escape_mouse(self, event) -> str:
         
@@ -239,6 +240,13 @@ class InputEngine:
                 if luy < event.button.y < luy + (size - ypad):
                     return "newgame"
 
+            size = 190
+            ypad = 90
+            lux = int(self.midxy[0] / 10)
+            luy = int(self.midxy[1] / 10)
+            if lux < event.button.x < lux + size:
+                if luy < event.button.y < luy + (size - ypad):
+                    return "menu"
 
 def testing() -> None:  # TODO
     i_e = InputEngine(sys.argv[1])

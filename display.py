@@ -244,6 +244,13 @@ class Display:
         self.rotate_all_sprits()
         s2.SDL_RenderPresent(self.renderer)
 
+    def draw_return_menu(self) -> None:
+
+        scalex = int(self.midxy[0] / 10)
+        scaley = int(self.midxy[1] / 10)
+        dst = s2.SDL_Rect(scalex, scaley, 200, 100)
+        s2.SDL_RenderCopy(self.renderer, self.t["return_menu"], None, dst)
+
     def display_escape(self) -> None:
         
         s2.SDL_RenderClear(self.renderer)
@@ -264,12 +271,7 @@ class Display:
         s2.SDL_RenderCopy(self.renderer, self.t["resume"], None, dst)
 
         
-        scalex = int(self.midxy[0] / 10)
-        scaley = int(self.midxy[1] / 10)
-        dst = s2.SDL_Rect(scalex, scaley, 200, 100)
-        s2.SDL_RenderCopy(self.renderer, self.t["return_menu"], None, dst)
-
-        
+        self.draw_return_menu() 
 
         s2.SDL_SetTextureColorMod(self.t['sprit_ghost1'], 255, 255, 255)
         s2.SDL_SetTextureColorMod(self.t['return_menu'], 255, 255, 255)
