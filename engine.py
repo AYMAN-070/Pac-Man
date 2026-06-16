@@ -6,8 +6,61 @@ from player import Player
 from player import Direction
 from ghost import Ghost
 from ghost import GhostState
+import math
 import random
 
+def update_pos(entity: Ghost | Player, pos: str, speed: float) -> None:
+    """ decrease position value""" 
+
+    if pos == "x":
+        entity.xf = round(entity.xf + speed, 2)
+        entity.x = int(entity.xf)
+    else:
+        entity.yf = round(entity.yf + speed, 2)
+        entity.y = int(entity.yf)
+
+def rail_movements(entity: Ghost | Player) -> None:
+    """ move to a destination """
+
+    # Use move method before use _rail_movements
+
+    midx = entity.x + 0.5
+    midy = entity.y + 0.5
+    xf = entity.xf
+    yf = entity.yf
+    desty = entity.desty
+    destx = entity.destx
+
+    if destx != -1:
+        dist_dest = round(math.sqrt(((destx - xf) **2) + ((desty - yf) **2)), 2)
+        if dist_dest > 1 and (destx != xf or desty != yf):
+            # we are not aligned, go to center of the case
+            # the center is the shorter and mandatory passage to go dest
+            if midx != xf:
+                if xf < midx:
+                    update_pos(entity, "x", 0.1)
+                else:
+                    update_pos(entity, "x", -0.1)
+            else:
+                if yf < midy:
+                    update_pos(entity, "y", 0.1)
+                else:
+                    update_pos(entity, "y", -0.1)
+        elif dist_dest > 0:
+            # we are aligned now go in line to the dest
+            if destx != xf:
+                if xf < destx:
+                    update_pos(entity, "x", 0.1)
+                else:
+                    update_pos(entity, "x", -0.1)
+            else:
+                if yf < desty:
+                    update_pos(entity, "y", 0.1)
+                else:
+                    update_pos(entity, "y", -0.1)
+        else:
+            # we are arrived
+            entity.destx = -1
 
 class GameEngine:
     """
@@ -88,8 +141,8 @@ class GameEngine:
             # If the desired cell is not a wall, we move!
             if not self.maze.is_wall(target_x, target_y):
                 self.player.current_direction = direction
-                self.player.x = target_x
-                self.player.y = target_y
+                self.player.destx = target_x + 0.5
+                self.player.desty = target_y + 0.5
                 return
         # If both directions blocked by walls We stop
         self.player.current_direction = Direction.NONE
@@ -119,12 +172,25 @@ class GameEngine:
             # Make all ghosts edible!
             for ghost in self.ghosts:
                 ghost.set_edible()
+
+        self._hit_box_process(self.player.xf, self.player.yf)
+
+    def _hit_box_process(self, pxf: float, pyf: float) -> None:
+        """ check hit box collisions with precise positions"""
+
+        def hit_box_tolerence(ghost: Ghost, pxf: float, pyf: float) -> bool:
+            tolerence = 0.5
+            if  tolerence > ghost.xf - pxf > - tolerence:
+                if  tolerence > ghost.yf - pyf > - tolerence:
+                    return True
+            return False
+
         # GHOST COLLISIONS
         for ghost in self.ghosts:
             if ghost.state == GhostState.DEAD:
                 continue
             # If Pac-Man and a Ghost are on the exact same tile
-            if ghost.x == px and ghost.y == py:
+            if hit_box_tolerence(ghost, pxf, pyf):
                 if ghost.state == GhostState.EDIBLE:
                     # Pac-Man eats the ghost!<
                     self.score += self.config.settings.get("points_per_ghost",
@@ -184,15 +250,31 @@ class GameEngine:
         for ghost in self.ghosts:
             if ghost.state == GhostState.DEAD:
                 continue
-            # Find all directions the ghost can legally move to
-            valid_dirs = self._get_valid_directions(ghost.x, ghost.y)
-            if not valid_dirs:
-                continue  # ca arrive pas mais juste par securité
-            # Pick a random valid direction!
-            best_dir = random.choice(valid_dirs)
-            dx, dy = best_dir.value
-            ghost.x += dx
-            ghost.y += dy
+            if ghost.destx == -1:
+                # Find all directions the ghost can legally move to
+                valid_dirs = self._get_valid_directions(ghost.x, ghost.y)
+                if not valid_dirs:
+                    continue  # ca arrive pas mais juste par securité
+                # Pick a random valid direction!
+                best_dir = random.choice(valid_dirs)
+                dx, dy = best_dir.value
+
+                destx = ghost.x + dx
+                desty = ghost.y + dy
+                if destx < ghost.x:
+                    ghost.direction = "LEFT"
+                elif destx > ghost.x:
+                    ghost.direction = "RIGHT"
+                elif desty < ghost.y:
+                    ghost.direction = "UP"
+                else:
+                    ghost.direction = "DOWN"
+                ghost.destx = destx + 0.5
+                ghost.desty = desty + 0.5
+            rail_movements(ghost)
+
+
+    # def _hit_box_process(self, pxf: float, pyf: float) -> None:
 
     def update(self, delta_time: float) -> None:
         """
@@ -210,6 +292,7 @@ class GameEngine:
             ghost.update_timer(delta_time)
         # Move Player
         self._move_player()
+        rail_movements(self.player)
         # Move Ghosts
         self._move_ghosts()
         # Player eating pacgums or touching ghosts

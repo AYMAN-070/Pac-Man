@@ -21,6 +21,12 @@ class Ghost:
         """
         self.x: int = start_x
         self.y: int = start_y
+        self.xf: float = start_x + 0.5
+        self.yf: float = start_y + 0.5
+        self.destx: float = -1
+        self.desty: float = 0
+        self.direction: str = "DOWN"
+        self.rotasprit: int = 0
         # We save the starting position
         self.start_x: int = start_x
         self.start_y: int = start_y
@@ -45,6 +51,11 @@ class Ghost:
         self.state = GhostState.DEAD
         self.x = self.start_x
         self.y = self.start_y
+        self.xf: float = self.start_x + 0.5
+        self.yf: float = self.start_y + 0.5
+        self.destx: float = -1
+        self.desty: float = 0
+        self.direction: str = "DOWN"
         self.timer = 5.0  # Respawns in its corner after 5 seconds
 
     def update_timer(self, delta_time: float) -> None:

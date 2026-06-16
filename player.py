@@ -24,6 +24,10 @@ class Player:
         # actual position
         self.x: int = start_x
         self.y: int = start_y
+        self.xf: float = start_x + 0.5
+        self.yf: float = start_y + 0.5
+        self.destx: float = -1
+        self.desty: float = 0
         # Player should reappears in the middle if he dies
         self.start_x: int = start_x
         self.start_y: int = start_y

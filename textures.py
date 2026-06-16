@@ -25,7 +25,8 @@ TEXTURES_PATH = [
         "score.png",
         "lives.png",
         "time.png",
-        "sprit_lifes.png",
+        "sprit_lives.png",
+        "sprit_ghost1.png",
 ]
 
 class Textures:

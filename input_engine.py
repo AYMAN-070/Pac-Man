@@ -44,7 +44,7 @@ class InputEngine:
     def __init__(self, path: str) -> None:
         """  """  # TODO
 
-        self.fps_limit = int(1000 / 10)  # = 16 for 60 fps TODO
+        self.fps_limit = 16  # for 60 / 1000 for fps TODO
         self.midxy: list[int] = [int(D.w / 2), int(D.h / 2)]
         self.engine = GameEngine(path)
         self.player = self.engine.player
@@ -97,7 +97,7 @@ class InputEngine:
             s2.SDL_DestroyWindow(self.window)
             s2.SDL_Quit()
             raise InputError("Error. Can't init renderer")
-        s2.SDL_SetRenderDrawColor(self.renderer, 12, 15, 50, 255)
+        s2.SDL_SetRenderDrawColor(self.renderer, 62, 98, 124, 255)
 
         try:
             self.textures = Textures(self.renderer)
@@ -105,6 +105,10 @@ class InputEngine:
             self.d = Display(self.engine, self.fps_limit,
                              self.renderer, self.t, self.font,
                              self.midxy)
+            if D.w < D.h:
+                self.d.cell = int((D.w - 250) / len(self.d.maze))
+            else:
+                self.d.cell = int((D.h - 250) / len(self.d.maze))
             self.process()
         except Exception:
             raise
@@ -165,8 +169,15 @@ class InputEngine:
                         return "exit"
                     case s2.SDL_WINDOWEVENT:
                         if event.window.event == s2.SDL_WINDOWEVENT_RESIZED:
-                            self.midxy[0] = int(event.window.data1 / 2)
-                            self.midxy[1] = int(event.window.data2 / 2)
+                            w = event.window.data1
+                            h = event.window.data2
+                            self.midxy[0] = int(w / 2)
+                            self.midxy[1] = int(h / 2)
+                            if w < h:
+                                self.d.cell = int((w - 250) / len(self.d.maze))
+                            else:
+                                self.d.cell = int((h - 250) / len(self.d.maze))
+
                     case s2.SDL_MOUSEBUTTONUP:
                         res = mousebuttonup(event)
                         if res:

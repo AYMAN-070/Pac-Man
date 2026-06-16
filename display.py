@@ -5,11 +5,11 @@ import sdl2 as s2
 import ctypes
 from typing import Any
 import time
+import random
 
 from engine import GameEngine
 from ghost import GhostState
-
-CELL = 50
+from player import Direction
 
 class DiplayError(Exception):
     """  """ # TODO
@@ -26,14 +26,20 @@ class Display:
         self.engine = engine
         self.maze = self.engine.maze.grid
         self.player = self.engine.player
+        self.p_direction = ""
         self.ghosts = self.engine.ghosts
-
+        for ghost in self.ghosts:
+            ghost.rotasprit = random.randint(0, 4)
+            print(ghost.rotasprit)
+        self.rotasprit = random.randint(0, 4)
+        self.sprits_rate = 0
     
         self.delta_time = fps_limit / 1000
         self.renderer = renderer
         self.t = textures
         self.font = font
         self.midxy = midxy
+        self.cell = 0
 
         self.txt_color = s2.SDL_Color(255, 255, 255, 255)
 
@@ -102,22 +108,51 @@ class Display:
     def draw_cell(self, cell: str, x, y) -> None:
         """  """ #  TODO
 
-        dst = s2.SDL_Rect(x, y, CELL, CELL)
+        dst = s2.SDL_Rect(x, y, self.cell, self.cell)
         s2.SDL_RenderCopy(self.renderer, self.t[cell], None, dst)
 
     def draw_pacman(self, padx: int, pady: int) -> None:
         """  """ #  TODO
+        match self.player.next_direction:
+            case Direction.UP:
+                row = 0
+            case Direction.LEFT:
+                row = 2
+            case Direction.RIGHT:
+                row = 3
+            case _:
+                row = 1
+        col = self.rotasprit
+        w, h = 250, 250
+        src = s2.SDL_Rect(col * w, row * h, w, h)
         
-        dst = s2.SDL_Rect(self.player.x * CELL + padx, self.player.y * CELL + pady, CELL, CELL)
-        s2.SDL_RenderCopy(self.renderer, self.t["pacman1"], None, dst)
+        dst = s2.SDL_Rect(int(self.player.xf * self.cell + padx), int(self.player.yf * self.cell + pady), self.cell, self.cell)
+        s2.SDL_RenderCopy(self.renderer, self.t["sprit_ghost1"], src, dst)
 
     def draw_ghosts(self, padx: int, pady: int) -> None:
         """  """ #  TODO
 
-        for ghost in self.ghosts:
+        for i, ghost in enumerate(self.ghosts):
             if not ghost.state == GhostState.DEAD:
-                dst = s2.SDL_Rect(ghost.x * CELL + padx, ghost.y * CELL + pady, CELL, CELL)
-                s2.SDL_RenderCopy(self.renderer, self.t["fantom"], None, dst)
+                match ghost.direction:
+                    case "UP":
+                        row = 0
+                    case "LEFT":
+                        row = 2
+                    case "RIGHT":
+                        row = 3
+                    case _:
+                        row = 1
+                if ghost.state == GhostState.EDIBLE:
+                    s2.SDL_SetTextureColorMod(self.t['sprit_ghost1'], 100, 150, 255)
+                else:
+                    s2.SDL_SetTextureColorMod(self.t['sprit_ghost1'], 255, 255, 255)
+
+                col = ghost.rotasprit
+                w, h = 250, 250
+                src = s2.SDL_Rect(col * w, row * h, w, h)
+                dst = s2.SDL_Rect(int(ghost.xf * self.cell + padx), int(ghost.yf * self.cell + pady), self.cell, self.cell)
+                s2.SDL_RenderCopy(self.renderer, self.t['sprit_ghost1'], src, dst)
 
     def draw_text(self, string: str,
                   x: int, y: int,
@@ -136,7 +171,7 @@ class Display:
         s_score = f"{self.engine.score}"
         self.draw_text(s_score, self.midxy[0] - 20, 15, len(s_score) * 20, 50)
 
-        dst = s2.SDL_Rect(self.midxy[0] - 200, 5, 160, 70)        
+        dst = s2.SDL_Rect(self.midxy[0] - 200, 5, 165, 70)        
         s2.SDL_RenderCopy(self.renderer, self.t["score"], None, dst)
 
         dst = s2.SDL_Rect(int(self.midxy[0] / 6 - 100), 150, 160, 70)        
@@ -149,14 +184,21 @@ class Display:
         s2.SDL_RenderCopy(self.renderer, self.t["time"], None, dst)
 
         s_time = f"{round(self.engine.time_left, 2)}"
-        self.draw_text(s_time, self.midxy[0] + 30, self.midxy[1] * 2 - 100, len(s_time) * 20, 50)
+        self.draw_text(s_time, self.midxy[0] + 30, self.midxy[1] * 2 - 105, len(s_time) * 20, 50)
 
         col = self.player.lives - 1
         row = 0
         w, h = 150, 300
         src = s2.SDL_Rect(col * w, row * h, w, h)
         dst = s2.SDL_Rect(int(self.midxy[0] / 6) + 40, 135, 100, 130)
-        s2.SDL_RenderCopy(self.renderer, self.t['sprit_lifes'], src, dst)
+        s2.SDL_RenderCopy(self.renderer, self.t['sprit_lives'], src, dst)
+
+    def rotate_all_sprits(self) -> None:
+        if self.sprits_rate == 0:
+            for ghost in self.ghosts:
+                ghost.rotasprit = (ghost.rotasprit + 1) % 5
+            self.rotasprit = (self.rotasprit + 1) % 5
+        self.sprits_rate = (self.sprits_rate + 1) % 5
 
     def display_game(self) -> None:
         """  """ #  TODO
@@ -165,15 +207,15 @@ class Display:
         
         self.engine.update(self.delta_time)
 
-        player_distx_0 = (CELL * self.player.x + CELL / 2)
-        player_disty_0 = (CELL * self.player.y + CELL / 2)
+        player_distx_0 = (self.cell * self.player.x + self.cell / 2)
+        player_disty_0 = (self.cell * self.player.y + self.cell / 2)
 
         if False:
             startx = int(self.midxy[0] - player_distx_0)
             starty = int(self.midxy[1] - player_disty_0)
             posy = starty
         else:
-            startx = int(self.midxy[0] - CELL * len(self.maze) / 2)
+            startx = int(self.midxy[0] - self.cell * len(self.maze) / 2)
             starty = 90
             posy = starty
 
@@ -191,12 +233,15 @@ class Display:
                     case 3:  # SUPERPACGUM
                         self.draw_cell("megapacgum", posx, posy)
                         pass
-                posx += CELL
-            posy += CELL
-    
-        self.draw_ghosts(startx, starty)
-        self.draw_pacman(startx, starty) 
+                posx += self.cell
+            posy += self.cell
+  
+        padx = startx - self.cell / 2
+        pady = starty - self.cell / 2
+        self.draw_ghosts(padx, pady)
+        self.draw_pacman(padx, pady) 
         self.draw_infos()
-
+        
+        self.rotate_all_sprits()
         s2.SDL_RenderPresent(self.renderer)
 
