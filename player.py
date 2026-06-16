@@ -52,5 +52,7 @@ class Player:
         """
         self.x = self.start_x
         self.y = self.start_y
+        self.xf = self.start_x + 0.5
+        self.yf = self.start_y + 0.5
         self.current_direction = Direction.NONE
         self.next_direction = Direction.NONE

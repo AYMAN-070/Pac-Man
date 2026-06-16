@@ -90,6 +90,7 @@ class GameEngine:
         hs_filename = self.config.settings.get("highscore_filename",
                                                "highscores.json")
         self.highscore_manager = HighscoreManager(hs_filename)
+        self.player_died_event = False
         # Load the first level
         self.load_level()
 
@@ -205,6 +206,7 @@ class GameEngine:
                     if not self.cheat_invincible:
                         # The ghost eats Pac-Man!
                         self.player.lose_life()
+                        self.player_died_event = True
                     # we reset ghosts to their corners
                     for g in self.ghosts:
                         g.x = g.start_x
@@ -292,6 +294,17 @@ class GameEngine:
                 ghost.destx = destx + 0.5
                 ghost.desty = desty + 0.5
             rail_movements(ghost)
+
+    def reset_game(self) -> None:
+        """
+        Hard reset of the engine to start a brand new game from the Main Menu.
+        """
+        self.score = 0
+        self.current_level = 1
+        self.is_game_over = False
+        self.is_victory = False
+        self.player_died_event = False
+        self.load_level()
 
     def update(self, delta_time: float) -> None:
         """
