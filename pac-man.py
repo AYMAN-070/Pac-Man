@@ -63,7 +63,7 @@ class InputEngine:
             s2_ttf.TTF_Quit()
             raise
 
-        check = s2.SDL_Init(s2.SDL_INIT_EVERYTHING)
+        check = s2.SDL_Init(s2.SDL_INIT_VIDEO)
 
         if check != 0:
             s2_ttf.TTF_CloseFont(self.font)
