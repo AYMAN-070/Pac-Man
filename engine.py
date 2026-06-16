@@ -10,6 +10,7 @@ import math
 from highscore import HighscoreManager
 import random
 
+
 def update_pos(entity: Ghost | Player, pos: str, speed: float) -> None:
     """ decrease position value""" 
 
@@ -19,6 +20,7 @@ def update_pos(entity: Ghost | Player, pos: str, speed: float) -> None:
     else:
         entity.yf = round(entity.yf + speed, 2)
         entity.y = int(entity.yf)
+
 
 def rail_movements(entity: Ghost | Player) -> None:
     """ move to a destination """
@@ -33,7 +35,8 @@ def rail_movements(entity: Ghost | Player) -> None:
     destx = entity.destx
 
     if destx != -1:
-        dist_dest = round(math.sqrt(((destx - xf) **2) + ((desty - yf) **2)), 2)
+        dist_dest = round(math.sqrt(((destx - xf) ** 2)
+                                    + ((desty - yf) ** 2)), 2)
         if dist_dest > 1 and (destx != xf or desty != yf):
             # we are not aligned, go to center of the case
             # the center is the shorter and mandatory passage to go dest
@@ -62,6 +65,7 @@ def rail_movements(entity: Ghost | Player) -> None:
         else:
             # we are arrived
             entity.destx = -1
+
 
 class GameEngine:
     """

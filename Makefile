@@ -1,8 +1,8 @@
-ARGS=
+ARGS= config.json
 PROGRAM= pac-man.py
 MFILE= student
 TRACE= .install_trace
-PYTHON= python3
+PYTHON= uv run python
 LINT_EXCLUDES= uv_lock,.venv
 LINT_EXCLUDES_MYPY= "(uv_lock|\.venv)"
 

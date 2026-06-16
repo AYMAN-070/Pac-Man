@@ -29,12 +29,13 @@ class Maze:
         try:
             if not MAZE_GENERATOR_AVAILABLE:
                 raise ImportError("Mazegenerator package is not installed.")
-            raw_maze = mazegenerator.generate(
-                width=self.width,
-                height=self.height,
-                seed=self.seed,
-                PERFECT=False
+            generator = mazegenerator.MazeGenerator(
+                size=(self.width, self.height),
+                perfect=False,
+                seed=self.seed
             )
+            generator.generate()
+            raw_maze = generator.maze
             self._parse_external_maze(raw_maze)
             self._place_items()
             print("Maze generated successfully using external package")

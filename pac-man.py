@@ -1,14 +1,18 @@
 
-import sdl2.ext.image as s2_img
-import sdl2.sdlttf as s2_ttf
-import sdl2 as s2
+import sys
 import ctypes
 from enum import IntEnum
-import sys
 from typing import Callable
-
+try:
+    import sdl2 as s2
+    import sdl2.ext.image as s2_img
+    import sdl2.sdlttf as s2_ttf
+    import mazegenerator
+except ImportError as e:
+    print(f"Error : missing library ({e.name}).")
+    print("Solution : lunch 'make run'.")
+    sys.exit(1)
 from engine import GameEngine
-
 from textures import Textures
 from display import Display
 from player import Direction
@@ -238,9 +242,8 @@ class InputEngine:
                     return "newgame"
 
 
-def testing() -> None:  # TODO
-    i_e = InputEngine(sys.argv[1])
-    print("created")
-
-
-testing()
+if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        print("Error. Usage : python3 pac-man.py config.json")
+        sys.exit(1)
+    app = InputEngine(sys.argv[1])
