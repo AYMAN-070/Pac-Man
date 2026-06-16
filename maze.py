@@ -4,6 +4,7 @@ try:
     MAZE_GENERATOR_AVAILABLE = True
 except ImportError:
     MAZE_GENERATOR_AVAILABLE = False
+import random
 
 
 class Maze:
@@ -29,12 +30,14 @@ class Maze:
         try:
             if not MAZE_GENERATOR_AVAILABLE:
                 raise ImportError("Mazegenerator package is not installed.")
+            current_seed = self.seed
+            random.seed(current_seed)
             generator = mazegenerator.MazeGenerator(
                 size=(self.width // 2, self.height // 2),
                 perfect=False,
-                seed=self.seed
+                seed=current_seed
             )
-            generator.generate()
+            generator.generate(seed=current_seed)
             raw_maze = generator.maze
             self._parse_external_maze(raw_maze)
             self._place_items()
@@ -58,7 +61,8 @@ class Maze:
             temp_grid = raw_maze.maze
         gen_height = len(temp_grid)
         gen_width = len(temp_grid[0])
-        self.grid = [[1 for _ in range(self.width)] for _ in range(self.height)]
+        self.grid = [[1 for _ in range(self.width)]
+                     for _ in range(self.height)]
 
         for y in range(gen_height):
             for x in range(gen_width):
@@ -99,7 +103,7 @@ class Maze:
     def carve_center(self) -> None:
         """Creuse le centre et dessine le logo 42"""
         center_x = self.width // 2
-        center_y = self.height // 2   
+        center_y = self.height // 2
         # empty center
         for y in range(center_y - 4, center_y + 5):
             for x in range(center_x - 6, center_x + 7):

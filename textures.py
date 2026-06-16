@@ -29,6 +29,7 @@ TEXTURES_PATH = [
         "time.png",
         "resume.png",
         "return_menu.png",
+        "instructions.png",
 
         "sprit_lives.png",
         "sprit_ghost1.png",

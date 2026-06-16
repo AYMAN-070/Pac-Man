@@ -96,12 +96,9 @@ class GameEngine:
     def load_level(self) -> None:
         """
         Generates the maze and places the player and ghosts for current level.
-        Level 1 uses a fixed seed. Subsequent levels use a random seed.
         """
-        if self.current_level == 1:
-            seed: int = self.config.settings.get("seed", 42)
-        else:
-            seed = random.randint(1, 999999)
+        base_seed: int = self.config.settings.get("seed", 42)
+        seed = base_seed + self.current_level
         levels_config = self.config.settings.get("level",
                                                  [{"width": 21, "height": 21}])
         # SYSTEM de securite si on depasse level max donnee
@@ -188,8 +185,8 @@ class GameEngine:
 
         def hit_box_tolerence(ghost: Ghost, pxf: float, pyf: float) -> bool:
             tolerence = 0.5
-            if  tolerence > ghost.xf - pxf > - tolerence:
-                if  tolerence > ghost.yf - pyf > - tolerence:
+            if tolerence > ghost.xf - pxf > - tolerence:
+                if tolerence > ghost.yf - pyf > - tolerence:
                     return True
             return False
 
@@ -212,6 +209,11 @@ class GameEngine:
                     for g in self.ghosts:
                         g.x = g.start_x
                         g.y = g.start_y
+                        g.xf = g.start_x + 0.5
+                        g.yf = g.start_y + 0.5
+                        g.destx = -1
+                        g.desty = 0
+                        g.direction = "DOWN"
                         g.state = GhostState.CHASE
                     # Check for Game Over condition
                     if self.player.lives <= 0:
@@ -268,7 +270,8 @@ class GameEngine:
                     continue  # juste par securité
                 if ghost.state == GhostState.EDIBLE:
                     best_dir = max(valid_dirs,
-                                   key=lambda m: abs((ghost.x + m.value[0]) - px)
+                                   key=lambda
+                                   m: abs((ghost.x + m.value[0]) - px)
                                    + abs((ghost.y + m.value[1]) - py))
                     dx, dy = best_dir.value
                 else:

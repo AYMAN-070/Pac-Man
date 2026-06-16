@@ -2,7 +2,7 @@
 import sys
 import ctypes
 from enum import IntEnum
-from typing import Callable
+from typing import Callable, Any
 try:
     import sdl2 as s2
     import sdl2.ext.image as s2_img
@@ -16,7 +16,6 @@ from engine import GameEngine
 from textures import Textures
 from display import Display
 from player import Direction
-
 
 # MAZE CASES INDICES
 
@@ -113,6 +112,8 @@ class InputEngine:
                 self.d.cell = int((D.w - 250) / len(self.d.maze))
             else:
                 self.d.cell = int((D.h - 250) / len(self.d.maze))
+            if self.d.cell < 50:
+                self.d.cell = 50
             self.process()
         except Exception:
             raise
@@ -153,6 +154,11 @@ class InputEngine:
                     mouse_event = self.escape_mouse
                     key_event = lambda *args: None
                     display = self.d.display_escape
+                case "instructions":
+                    mouse_event = self.instructions_mouse
+                    key_event = lambda *args: None
+                    display = self.d.display_instructions
+            print(res)
 
     def core_while(
                 self,
@@ -229,8 +235,19 @@ class InputEngine:
                 if button[option]['lu'][1] < y < button[option]['rd'][1]:
                     return str(option)
         return ""
+    
+    def return_menu(self, event: Any) -> str:
 
-    def escape_mouse(self, event) -> str:
+        size = 190
+        ypad = 90
+        lux = int(self.midxy[0] / 10)
+        luy = int(self.midxy[1] / 10)
+        if lux < event.button.x < lux + size:
+            if luy < event.button.y < luy + (size - ypad):
+                return "menu"
+        return ""
+    
+    def escape_mouse(self, event: Any) -> str:
         
         if event.button.button == s2.SDL_BUTTON_LEFT:
             size = 600
@@ -241,6 +258,18 @@ class InputEngine:
                 if luy < event.button.y < luy + (size - ypad):
                     return "newgame"
 
+            ret = self.return_menu(event)
+            if ret:
+                return ret
+            return ""
+
+    def instructions_mouse(self, event: Any) -> str:
+
+        if event.button.button == s2.SDL_BUTTON_LEFT:
+            ret = self.return_menu(event)
+            if ret:
+                return ret
+        return ""
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
