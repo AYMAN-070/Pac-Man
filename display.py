@@ -287,8 +287,9 @@ class Display:
         dst = s2.SDL_Rect(scalex, scaley, 200, 100)
         s2.SDL_RenderCopy(self.renderer, self.t["return_menu"], None, dst)
 
-        w = 1000 / ((self.midxy[0] / 10))
-        h = 1600 / ((self.midxy[1] / 10))
+        mlp = self.midxy[1] / 1000
+        w = 1000 * mlp
+        h = 1600 * mlp
 
         x = self.midxy[0] - w / 2
         y = self.midxy[1] - h / 2
