@@ -109,6 +109,8 @@ class InputEngine:
                 self.d.cell = int((D.w - 250) / len(self.d.maze))
             else:
                 self.d.cell = int((D.h - 250) / len(self.d.maze))
+            if self.d.cell < 50:
+                self.d.cell = 50
             self.process()
         except Exception:
             raise

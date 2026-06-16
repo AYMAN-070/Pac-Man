@@ -208,6 +208,11 @@ class GameEngine:
                     for g in self.ghosts:
                         g.x = g.start_x
                         g.y = g.start_y
+                        g.xf = g.start_x + 0.5
+                        g.yf  = g.start_y + 0.5
+                        g.destx = -1
+                        g.desty = 0
+                        g.direction = "DOWN"
                         g.state = GhostState.CHASE
                     # Check for Game Over condition
                     if self.player.lives <= 0:
