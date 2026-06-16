@@ -276,3 +276,24 @@ class Display:
         s2.SDL_SetTextureColorMod(self.t['sprit_ghost1'], 255, 255, 255)
         s2.SDL_SetTextureColorMod(self.t['return_menu'], 255, 255, 255)
         s2.SDL_RenderPresent(self.renderer)
+
+        
+    def display_instructions(self) -> None:
+
+        s2.SDL_RenderClear(self.renderer)
+
+        scalex = int(self.midxy[0] / 10)
+        scaley = int(self.midxy[1] / 10)
+        dst = s2.SDL_Rect(scalex, scaley, 200, 100)
+        s2.SDL_RenderCopy(self.renderer, self.t["return_menu"], None, dst)
+
+        w = 1000 / ((self.midxy[0] / 10))
+        h = 1600 / ((self.midxy[1] / 10))
+
+        x = self.midxy[0] - w / 2
+        y = self.midxy[1] - h / 2
+
+        dst = s2.SDL_Rect(int(x), int(y), int(w), int(h))
+        s2.SDL_RenderCopy(self.renderer, self.t["instructions"], None, dst)
+
+        s2.SDL_RenderPresent(self.renderer)

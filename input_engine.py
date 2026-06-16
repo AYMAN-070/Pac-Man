@@ -5,7 +5,7 @@ import sdl2 as s2
 import ctypes
 from enum import IntEnum
 import sys
-from typing import Callable
+from typing import Callable, Any
 
 from engine import GameEngine
 
@@ -151,6 +151,11 @@ class InputEngine:
                     mouse_event = self.escape_mouse
                     key_event = lambda *args: None
                     display = self.d.display_escape
+                case "instructions":
+                    mouse_event = self.instructions_mouse
+                    key_event = lambda *args: None
+                    display = self.d.display_instructions
+            print(res)
 
     def core_while(
                 self,
@@ -228,8 +233,18 @@ class InputEngine:
                     return str(option)
         return ""
     
+    def return_menu(self, event: Any) -> str:
 
-    def escape_mouse(self, event) -> str:
+        size = 190
+        ypad = 90
+        lux = int(self.midxy[0] / 10)
+        luy = int(self.midxy[1] / 10)
+        if lux < event.button.x < lux + size:
+            if luy < event.button.y < luy + (size - ypad):
+                return "menu"
+        return ""
+    
+    def escape_mouse(self, event: Any) -> str:
         
         if event.button.button == s2.SDL_BUTTON_LEFT:
             size = 600
@@ -240,13 +255,18 @@ class InputEngine:
                 if luy < event.button.y < luy + (size - ypad):
                     return "newgame"
 
-            size = 190
-            ypad = 90
-            lux = int(self.midxy[0] / 10)
-            luy = int(self.midxy[1] / 10)
-            if lux < event.button.x < lux + size:
-                if luy < event.button.y < luy + (size - ypad):
-                    return "menu"
+            ret = self.return_menu(event)
+            if ret:
+                return ret
+            return ""
+
+    def instructions_mouse(self, event: Any) -> str:
+
+        if event.button.button == s2.SDL_BUTTON_LEFT:
+            ret = self.return_menu(event)
+            if ret:
+                return ret
+        return ""
 
 def testing() -> None:  # TODO
     i_e = InputEngine(sys.argv[1])
