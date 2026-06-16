@@ -7,6 +7,7 @@ from player import Direction
 from ghost import Ghost
 from ghost import GhostState
 import math
+from highscore import HighscoreManager
 import random
 
 def update_pos(entity: Ghost | Player, pos: str, speed: float) -> None:
@@ -82,6 +83,9 @@ class GameEngine:
         self.player: Player
         self.ghosts: List[Ghost] = []
         self.cheat_invincible: bool = False
+        hs_filename = self.config.settings.get("highscore_filename",
+                                               "highscores.json")
+        self.highscore_manager = HighscoreManager(hs_filename)
         # Load the first level
         self.load_level()
 
@@ -251,13 +255,22 @@ class GameEngine:
             if ghost.state == GhostState.DEAD:
                 continue
             if ghost.destx == -1:
+                # get instant coordinates of pacman
+                px = self.player.x
+                py = self.player.y
                 # Find all directions the ghost can legally move to
                 valid_dirs = self._get_valid_directions(ghost.x, ghost.y)
                 if not valid_dirs:
-                    continue  # ca arrive pas mais juste par securité
-                # Pick a random valid direction!
-                best_dir = random.choice(valid_dirs)
-                dx, dy = best_dir.value
+                    continue  # juste par securité
+                if ghost.state == GhostState.EDIBLE:
+                    best_dir = max(valid_dirs,
+                                   key=lambda m: abs((ghost.x + m.value[0]) - px)
+                                   + abs((ghost.y + m.value[1]) - py))
+                    dx, dy = best_dir.value
+                else:
+                    # Pick a random valid direction!
+                    best_dir = random.choice(valid_dirs)
+                    dx, dy = best_dir.value
 
                 destx = ghost.x + dx
                 desty = ghost.y + dy
@@ -272,9 +285,6 @@ class GameEngine:
                 ghost.destx = destx + 0.5
                 ghost.desty = desty + 0.5
             rail_movements(ghost)
-
-
-    # def _hit_box_process(self, pxf: float, pyf: float) -> None:
 
     def update(self, delta_time: float) -> None:
         """

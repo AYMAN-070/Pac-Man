@@ -1,5 +1,5 @@
 {
-  "#": "Game parameters",
+  # Game parameters
   "highscore_filename": "highscores.json",
   "lives": 3,
   "pacgum": 42,
@@ -9,7 +9,7 @@
   "seed": 42,
   "level_max_time": 90.0,
   
-  "#": "Levels list",
+  # Levels list
   "level": [
     {
       "width": 21,
