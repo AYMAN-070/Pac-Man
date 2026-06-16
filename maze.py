@@ -16,6 +16,10 @@ class Maze:
         """
         Initializes the maze properties and generates the grid.
         """
+        if width % 2 == 0:
+            width += 1
+        if height % 2 == 0:
+            height += 1
         self.width: int = width
         self.height: int = height
         self.seed: int = seed
