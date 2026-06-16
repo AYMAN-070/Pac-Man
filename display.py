@@ -30,7 +30,6 @@ class Display:
         self.ghosts = self.engine.ghosts
         for ghost in self.ghosts:
             ghost.rotasprit = random.randint(0, 4)
-            print(ghost.rotasprit)
         self.rotasprit = random.randint(0, 4)
         self.sprits_rate = 0
     
@@ -207,10 +206,10 @@ class Display:
         
         self.engine.update(self.delta_time)
 
-        player_distx_0 = (self.cell * self.player.x + self.cell / 2)
-        player_disty_0 = (self.cell * self.player.y + self.cell / 2)
+        player_distx_0 = (self.cell * self.player.xf + self.cell / 2)
+        player_disty_0 = (self.cell * self.player.yf + self.cell / 2)
 
-        if False:
+        if True:
             startx = int(self.midxy[0] - player_distx_0)
             starty = int(self.midxy[1] - player_disty_0)
             posy = starty
@@ -245,3 +244,33 @@ class Display:
         self.rotate_all_sprits()
         s2.SDL_RenderPresent(self.renderer)
 
+    def display_escape(self) -> None:
+        
+        s2.SDL_RenderClear(self.renderer)
+        s2.SDL_SetTextureColorMod(self.t['sprit_ghost1'], 65, 50, 80)
+        s2.SDL_SetTextureColorMod(self.t['return_menu'], 140, 120, 180)
+        
+        size = 50
+
+        size_cell = self.cell * size
+        w, h = 250, 250
+        src = s2.SDL_Rect(0 * w, 1 * h, w, h)
+
+        dst = s2.SDL_Rect(int(self.midxy[0] - size_cell / 2), int(self.midxy[1] - size_cell / 2), size_cell, size_cell)
+        s2.SDL_RenderCopy(self.renderer, self.t['sprit_ghost1'], src, dst)
+
+        size = 1000
+        dst = s2.SDL_Rect(int(self.midxy[0] - size / 2), int(self.midxy[1] - size / 2), size, size)
+        s2.SDL_RenderCopy(self.renderer, self.t["resume"], None, dst)
+
+        
+        scalex = int(self.midxy[0] / 10)
+        scaley = int(self.midxy[1] / 10)
+        dst = s2.SDL_Rect(scalex, scaley, 200, 100)
+        s2.SDL_RenderCopy(self.renderer, self.t["return_menu"], None, dst)
+
+        
+
+        s2.SDL_SetTextureColorMod(self.t['sprit_ghost1'], 255, 255, 255)
+        s2.SDL_SetTextureColorMod(self.t['return_menu'], 255, 255, 255)
+        s2.SDL_RenderPresent(self.renderer)

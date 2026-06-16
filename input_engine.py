@@ -142,11 +142,13 @@ class InputEngine:
                     key_event = lambda *args: None
                     display = self.d.display_menu
                 case "newgame":
-                    print("ng")
                     mouse_event = lambda *args: None
                     key_event = self.newgame_keys
                     display = self.d.display_game
-
+                case "escape":
+                    mouse_event = self.escape_mouse
+                    key_event = lambda *args: None
+                    display = self.d.display_escape
 
     def core_while(
                 self,
@@ -191,20 +193,19 @@ class InputEngine:
 
     def newgame_keys(self, event) -> str:
         """  """ #  TODO
-        print(event.key.keysym.sym, "button")
+
         match event.key.keysym.sym:
             case s2.SDLK_UP | s2.SDLK_w:
-                print("u")
                 self.player.next_direction = Direction.UP
             case s2.SDLK_RIGHT | s2.SDLK_d:
-                print("r")
                 self.player.next_direction = Direction.RIGHT
             case s2.SDLK_DOWN | s2.SDLK_s:
-                print("d")
                 self.player.next_direction = Direction.DOWN
             case s2.SDLK_LEFT | s2.SDLK_a:
-                print("l")
                 self.player.next_direction = Direction.LEFT
+            case s2.SDLK_ESCAPE:
+                return "escape"
+        return ""
 
 
     def menu_mouse(self, event) -> str:
@@ -224,6 +225,17 @@ class InputEngine:
                 if button[option]['lu'][1] < y < button[option]['rd'][1]:
                     return str(option)
         return ""
+
+    def escape_mouse(self, event) -> str:
+        
+        if event.button.button == s2.SDL_BUTTON_LEFT:
+            size = 600
+            ypad = 300
+            lux = int(self.midxy[0] - size / 2)
+            luy = int(self.midxy[1] - (size - ypad + 100) / 2)
+            if lux < event.button.x < lux + size:
+                if luy < event.button.y < luy + (size - ypad):
+                    return "newgame"
 
 
 def testing() -> None:  # TODO

@@ -16,15 +16,20 @@ TEXTURES_PATH = [
         "menu_scores.png",
         "menu_instructions.png",
         "menu_exit.png",
+
         "wall.png",
         "pacman1.png",
         "fantom.png",
         "pacgum.png",
         "megapacgum.png",
+
         "level.png",
         "score.png",
         "lives.png",
         "time.png",
+        "resume.png",
+        "return_menu.png",
+
         "sprit_lives.png",
         "sprit_ghost1.png",
 ]
