@@ -72,7 +72,3 @@ class Textures:
 
         name = Path(path).name.removesuffix(".png")
         self.all.update({name : texture})
-
-
-
-

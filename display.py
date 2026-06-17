@@ -77,41 +77,6 @@ class Display:
 
         s2.SDL_RenderPresent(self.renderer)
 
-    def get_buttons(self) -> dict[str, Any]:
-        """  """ #  TODO
-        data = dict()
-
-        jump = 210
-        pading = 200
-        w = 400
-        h = 200
-        pos_w = int(self.midxy[0] -  (w/ 2))
-
-        w_lu = self.midxy[0] - 155  # left up
-        w_rd = self.midxy[0] + 155  # right down
-
-        h_lu = jump + pading
-        h_rd = h_lu + 180
-        inside = {"lu": (w_lu, h_lu), "rd": (w_rd, h_rd)}
-        data.update({"newgame": inside})
-
-        h_lu = jump + pading * 2
-        h_rd = h_lu + 180
-        inside = {"lu": (w_lu, h_lu), "rd": (w_rd, h_rd)}
-        data.update({"scores": inside})
-
-        h_lu = jump + pading * 3
-        h_rd = h_lu + 180
-        inside = {"lu": (w_lu, h_lu), "rd": (w_rd, h_rd)}
-        data.update({"instructions": inside})
-
-        h_lu = jump + pading * 4
-        h_rd = h_lu + 110
-        inside = {"lu": (w_lu, h_lu), "rd": (w_rd, h_rd)}
-        data.update({"exit": inside})
-
-        return data
-
     def draw_cell(self, cell: str, x, y) -> None:
         """  """ #  TODO
 
@@ -213,7 +178,7 @@ class Display:
 
         self.sprits_rate = (self.sprits_rate + 1) % 5
 
-    def display_game(self) -> None:
+    def display_and_compute_game(self) -> None:
         """  """ #  TODO
 
         s2.SDL_RenderClear(self.renderer)
@@ -313,5 +278,38 @@ class Display:
 
         dst = s2.SDL_Rect(int(x), int(y), int(w), int(h))
         s2.SDL_RenderCopy(self.renderer, self.t["instructions"], None, dst)
+
+        s2.SDL_RenderPresent(self.renderer)
+
+    def display_scores(self) -> None:
+
+        s2.SDL_RenderClear(self.renderer)
+
+        scalex = int(self.midxy[0] / 10)
+        scaley = int(self.midxy[1] / 10)
+        dst = s2.SDL_Rect(scalex, scaley, 200, 100)
+        s2.SDL_RenderCopy(self.renderer, self.t["return_menu"], None, dst)
+
+        jump = 30
+        jumps = 0
+        scale = self.midxy[1] / 10
+        x = int(self.midxy[0] / 2 * scale)
+        if len(self.engine.highscore_manager.scores) == 0:
+            self.engine.highscore_manager.scores.append({"name": "bob","score": 400})
+            self.engine.highscore_manager.scores.append({"name": "boby","score": 403132124141251210})
+        for elem in self.engine.highscore_manager.scores:
+            y = int(self.midxy[1] / 2 + jump * jumps * scale)
+            s_name = f"{elem['name']}"
+            w = int(len(s_name) * 20)
+            h = int(80 * scale)
+            self.draw_text(s_name, x, y, w, h, self.font1)
+            s_score = f"{elem['score']}"
+            w =  int(len(s_score) * 50 * scale)
+            h = int(80 * scale)
+            self.draw_text(s_score,int( x + len(s_name) * 50 * scale + 20), y, w, h, self.font1)
+            jumps += 1
+        if len(self.engine.highscore_manager.scores) == 0:
+            print("e")
+        print(len(self.engine.highscore_manager.scores))
 
         s2.SDL_RenderPresent(self.renderer)
