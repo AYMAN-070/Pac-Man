@@ -54,5 +54,7 @@ class Player:
         self.y = self.start_y
         self.xf = self.start_x + 0.5
         self.yf = self.start_y + 0.5
+        self.destx: float = -1
+        self.desty: float = 0
         self.current_direction = Direction.NONE
         self.next_direction = Direction.NONE

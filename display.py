@@ -21,26 +21,34 @@ class Display:
 
     def __init__(self, engine: GameEngine, fps_limit: int,
                  renderer: Any, textures: dict[str, Any],
-                 font: Any, midxy: list[int]) -> None:
+                 font1: Any, font2: Any, midxy: list[int]) -> None:
         """  """ # TODO
         self.engine = engine
-        self.maze = self.engine.maze.grid
-        self.player = self.engine.player
-        self.p_direction = ""
-        self.ghosts = self.engine.ghosts
-        for ghost in self.ghosts:
-            ghost.rotasprit = random.randint(0, 4)
-        self.rotasprit = random.randint(0, 4)
+        self.init_engine()
+
+        self.rotasprit = 3
+        self.n_rotasprit = 4
         self.sprits_rate = 0
     
+        self.p_direction = ""
         self.delta_time = fps_limit / 1000
         self.renderer = renderer
         self.t = textures
-        self.font = font
+        self.font1 = font1
+        self.font2 = font2
         self.midxy = midxy
         self.cell = 0
 
         self.txt_color = s2.SDL_Color(255, 255, 255, 255)
+
+    def init_engine(self):
+        """  """ #  TODO
+
+        self.maze = self.engine.maze.grid
+        self.player = self.engine.player
+        self.ghosts = self.engine.ghosts
+        for ghost in self.ghosts:
+            ghost.rotasprit = random.randint(0, 4)
 
     def display_menu(self) -> None:
         """  """ #  TODO
@@ -69,41 +77,6 @@ class Display:
 
         s2.SDL_RenderPresent(self.renderer)
 
-    def get_buttons(self) -> dict[str, Any]:
-        """  """ #  TODO
-        data = dict()
-
-        jump = 210
-        pading = 200
-        w = 400
-        h = 200
-        pos_w = int(self.midxy[0] -  (w/ 2))
-
-        w_lu = self.midxy[0] - 155  # left up
-        w_rd = self.midxy[0] + 155  # right down
-
-        h_lu = jump + pading
-        h_rd = h_lu + 180
-        inside = {"lu": (w_lu, h_lu), "rd": (w_rd, h_rd)}
-        data.update({"newgame": inside})
-
-        h_lu = jump + pading * 2
-        h_rd = h_lu + 180
-        inside = {"lu": (w_lu, h_lu), "rd": (w_rd, h_rd)}
-        data.update({"scores": inside})
-
-        h_lu = jump + pading * 3
-        h_rd = h_lu + 180
-        inside = {"lu": (w_lu, h_lu), "rd": (w_rd, h_rd)}
-        data.update({"instructions": inside})
-
-        h_lu = jump + pading * 4
-        h_rd = h_lu + 110
-        inside = {"lu": (w_lu, h_lu), "rd": (w_rd, h_rd)}
-        data.update({"exit": inside})
-
-        return data
-
     def draw_cell(self, cell: str, x, y) -> None:
         """  """ #  TODO
 
@@ -126,7 +99,7 @@ class Display:
         src = s2.SDL_Rect(col * w, row * h, w, h)
         
         dst = s2.SDL_Rect(int(self.player.xf * self.cell + padx), int(self.player.yf * self.cell + pady), self.cell, self.cell)
-        s2.SDL_RenderCopy(self.renderer, self.t["sprit_ghost1"], src, dst)
+        s2.SDL_RenderCopy(self.renderer, self.t["sprit_pacman"], src, dst)
 
     def draw_ghosts(self, padx: int, pady: int) -> None:
         """  """ #  TODO
@@ -155,9 +128,10 @@ class Display:
 
     def draw_text(self, string: str,
                   x: int, y: int,
-                  w: int, h: int) -> None:
+                  w: int, h: int,
+                  font: Any) -> None:
 
-        surface = s2_ttf.TTF_RenderText_Solid(self.font, string.encode(), self.txt_color)
+        surface = s2_ttf.TTF_RenderText_Solid(font, string.encode(), self.txt_color)
         texture = s2.SDL_CreateTextureFromSurface(self.renderer, surface)
         s2.SDL_FreeSurface(surface)
         dst = s2.SDL_Rect(x, y, w, h)        
@@ -168,7 +142,7 @@ class Display:
         """  """ #  TODO
 
         s_score = f"{self.engine.score}"
-        self.draw_text(s_score, self.midxy[0] - 20, 15, len(s_score) * 20, 50)
+        self.draw_text(s_score, self.midxy[0] - 20, 15, len(s_score) * 20, 50, self.font1)
 
         dst = s2.SDL_Rect(self.midxy[0] - 200, 5, 165, 70)        
         s2.SDL_RenderCopy(self.renderer, self.t["score"], None, dst)
@@ -178,12 +152,13 @@ class Display:
         
         dst = s2.SDL_Rect(int(self.midxy[0] / 3 ), -10, 130, 100)        
         s2.SDL_RenderCopy(self.renderer, self.t["level"], None, dst)
+        s_level = f"{self.engine.current_level}"
+        self.draw_text(s_level, int(self.midxy[0] / 3) + 140, 0, len(s_level) * 50, 80, self.font2)
 
         dst = s2.SDL_Rect(self.midxy[0] - 400, self.midxy[1] * 2 - 150, 420, 140)        
         s2.SDL_RenderCopy(self.renderer, self.t["time"], None, dst)
-
         s_time = f"{round(self.engine.time_left, 2)}"
-        self.draw_text(s_time, self.midxy[0] + 30, self.midxy[1] * 2 - 105, len(s_time) * 20, 50)
+        self.draw_text(s_time, self.midxy[0] + 30, self.midxy[1] * 2 - 105, len(s_time) * 20, 50, self.font1)
 
         col = self.player.lives - 1
         row = 0
@@ -196,14 +171,18 @@ class Display:
         if self.sprits_rate == 0:
             for ghost in self.ghosts:
                 ghost.rotasprit = (ghost.rotasprit + 1) % 5
-            self.rotasprit = (self.rotasprit + 1) % 5
+            self.n_rotasprit -= 1
+            if self.n_rotasprit == -6:
+                self.n_rotasprit = 4
+            self.rotasprit = abs(self.n_rotasprit)
+
         self.sprits_rate = (self.sprits_rate + 1) % 5
 
-    def display_game(self) -> None:
+    def display_and_compute_game(self) -> None:
         """  """ #  TODO
 
         s2.SDL_RenderClear(self.renderer)
-        
+        level = self.engine.current_level
         self.engine.update(self.delta_time)
 
         player_distx_0 = (self.cell * self.player.xf + self.cell / 2)
@@ -243,6 +222,9 @@ class Display:
         
         self.rotate_all_sprits()
         s2.SDL_RenderPresent(self.renderer)
+
+        if level != self.engine.current_level:
+            self.init_engine()
 
     def draw_return_menu(self) -> None:
 
@@ -296,5 +278,38 @@ class Display:
 
         dst = s2.SDL_Rect(int(x), int(y), int(w), int(h))
         s2.SDL_RenderCopy(self.renderer, self.t["instructions"], None, dst)
+
+        s2.SDL_RenderPresent(self.renderer)
+
+    def display_scores(self) -> None:
+
+        s2.SDL_RenderClear(self.renderer)
+
+        scalex = int(self.midxy[0] / 10)
+        scaley = int(self.midxy[1] / 10)
+        dst = s2.SDL_Rect(scalex, scaley, 200, 100)
+        s2.SDL_RenderCopy(self.renderer, self.t["return_menu"], None, dst)
+
+        jump = 30
+        jumps = 0
+        scale = self.midxy[1] / 10
+        x = int(self.midxy[0] / 2 * scale)
+        if len(self.engine.highscore_manager.scores) == 0:
+            self.engine.highscore_manager.scores.append({"name": "bob","score": 400})
+            self.engine.highscore_manager.scores.append({"name": "boby","score": 403132124141251210})
+        for elem in self.engine.highscore_manager.scores:
+            y = int(self.midxy[1] / 2 + jump * jumps * scale)
+            s_name = f"{elem['name']}"
+            w = int(len(s_name) * 20)
+            h = int(80 * scale)
+            self.draw_text(s_name, x, y, w, h, self.font1)
+            s_score = f"{elem['score']}"
+            w =  int(len(s_score) * 50 * scale)
+            h = int(80 * scale)
+            self.draw_text(s_score,int( x + len(s_name) * 50 * scale + 20), y, w, h, self.font1)
+            jumps += 1
+        if len(self.engine.highscore_manager.scores) == 0:
+            print("e")
+        print(len(self.engine.highscore_manager.scores))
 
         s2.SDL_RenderPresent(self.renderer)

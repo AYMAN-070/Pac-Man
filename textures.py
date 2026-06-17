@@ -18,8 +18,6 @@ TEXTURES_PATH = [
         "menu_exit.png",
 
         "wall.png",
-        "pacman1.png",
-        "fantom.png",
         "pacgum.png",
         "megapacgum.png",
 
@@ -33,6 +31,7 @@ TEXTURES_PATH = [
 
         "sprit_lives.png",
         "sprit_ghost1.png",
+        "sprit_pacman.png",
 ]
 
 class Textures:
@@ -73,7 +72,3 @@ class Textures:
 
         name = Path(path).name.removesuffix(".png")
         self.all.update({name : texture})
-
-
-
-

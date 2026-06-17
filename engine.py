@@ -27,8 +27,8 @@ def rail_movements(entity: Ghost | Player) -> None:
 
     # Use move method before use _rail_movements
 
-    midx = entity.x + 0.5
-    midy = entity.y + 0.5
+    midx = int(entity.xf) + 0.5
+    midy = int(entity.yf) + 0.5
     xf = entity.xf
     yf = entity.yf
     desty = entity.desty
