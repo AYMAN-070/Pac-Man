@@ -145,6 +145,7 @@ class Maze:
             for x in range(1, self.width - 1):
                 if self.grid[y][x] == 0:
                     self.grid[y][x] = 2
+        self.grid[self.height // 2][self.width // 2] = 0
 
     def is_wall(self, x: int, y: int) -> bool:
         """
