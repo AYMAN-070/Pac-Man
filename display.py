@@ -24,15 +24,13 @@ class Display:
                  font: Any, midxy: list[int]) -> None:
         """  """ # TODO
         self.engine = engine
-        self.maze = self.engine.maze.grid
-        self.player = self.engine.player
-        self.p_direction = ""
-        self.ghosts = self.engine.ghosts
-        for ghost in self.ghosts:
-            ghost.rotasprit = random.randint(0, 4)
-        self.rotasprit = random.randint(0, 4)
+        self.init_engine()
+
+        self.rotasprit = 3
+        self.n_rotasprit = 4
         self.sprits_rate = 0
     
+        self.p_direction = ""
         self.delta_time = fps_limit / 1000
         self.renderer = renderer
         self.t = textures
@@ -41,6 +39,15 @@ class Display:
         self.cell = 0
 
         self.txt_color = s2.SDL_Color(255, 255, 255, 255)
+
+    def init_engine(self):
+        """  """ #  TODO
+
+        self.maze = self.engine.maze.grid
+        self.player = self.engine.player
+        self.ghosts = self.engine.ghosts
+        for ghost in self.ghosts:
+            ghost.rotasprit = random.randint(0, 4)
 
     def display_menu(self) -> None:
         """  """ #  TODO
@@ -126,7 +133,7 @@ class Display:
         src = s2.SDL_Rect(col * w, row * h, w, h)
         
         dst = s2.SDL_Rect(int(self.player.xf * self.cell + padx), int(self.player.yf * self.cell + pady), self.cell, self.cell)
-        s2.SDL_RenderCopy(self.renderer, self.t["sprit_ghost1"], src, dst)
+        s2.SDL_RenderCopy(self.renderer, self.t["sprit_pacman"], src, dst)
 
     def draw_ghosts(self, padx: int, pady: int) -> None:
         """  """ #  TODO
@@ -196,14 +203,18 @@ class Display:
         if self.sprits_rate == 0:
             for ghost in self.ghosts:
                 ghost.rotasprit = (ghost.rotasprit + 1) % 5
-            self.rotasprit = (self.rotasprit + 1) % 5
+            self.n_rotasprit -= 1
+            if self.n_rotasprit == -6:
+                self.n_rotasprit = 4
+            self.rotasprit = abs(self.n_rotasprit)
+
         self.sprits_rate = (self.sprits_rate + 1) % 5
 
     def display_game(self) -> None:
         """  """ #  TODO
 
         s2.SDL_RenderClear(self.renderer)
-        
+        level = self.engine.current_level
         self.engine.update(self.delta_time)
 
         player_distx_0 = (self.cell * self.player.xf + self.cell / 2)
@@ -243,6 +254,9 @@ class Display:
         
         self.rotate_all_sprits()
         s2.SDL_RenderPresent(self.renderer)
+
+        if level != self.engine.current_level:
+            self.init_engine()
 
     def draw_return_menu(self) -> None:
 

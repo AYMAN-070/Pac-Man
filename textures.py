@@ -33,6 +33,7 @@ TEXTURES_PATH = [
 
         "sprit_lives.png",
         "sprit_ghost1.png",
+        "sprit_pacman.png",
 ]
 
 class Textures:

@@ -49,6 +49,7 @@ class InputEngine:
 
         self.fps_limit = 16  # for 60 / 1000 for fps TODO
         self.midxy: list[int] = [int(D.w / 2), int(D.h / 2)]
+        self.config_path = path
         self.engine = GameEngine(path)
         self.player = self.engine.player
 
@@ -99,7 +100,7 @@ class InputEngine:
             s2_ttf.TTF_Quit()
             s2.SDL_DestroyWindow(self.window)
             s2.SDL_Quit()
-            raise InputError("Error. Can't init renderer")
+            raise In#putError("Error. Can't init renderer")
         s2.SDL_SetRenderDrawColor(self.renderer, 62, 98, 124, 255)
 
         try:
@@ -150,6 +151,10 @@ class InputEngine:
                     mouse_event = lambda *args: None
                     key_event = self.newgame_keys
                     display = self.d.display_game
+                    self.engine = GameEngine(self.config_path)
+                    self.player = self.engine.player
+                    self.d.engine = self.engine
+                    self.d.init_engine()
                 case "escape":
                     mouse_event = self.escape_mouse
                     key_event = lambda *args: None
