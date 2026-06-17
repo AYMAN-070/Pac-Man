@@ -14,18 +14,12 @@ import random
 def update_pos(entity: Ghost | Player, pos: str, speed: float) -> None:
     """ decrease position value""" 
 
-    tolerence = 2
     if pos == "x":
         entity.xf = round(entity.xf + speed, 2)
-        if tolerence >= entity.xf * 10 % 10 - 5 >= -tolerence:
-       #     print("YES")
-            entity.x = int(entity.xf)
-        print( tolerence, (entity.xf * 10 % 10) - 5, -tolerence, entity.x)
+        entity.x = int(entity.xf)
     else:
         entity.yf = round(entity.yf + speed, 2)
-        if tolerence >= entity.yf * 10 % 10 - 5 >= -tolerence:
-        #    print("BOOM")
-            entity.y = int(entity.yf)
+        entity.y = int(entity.yf)
 
 
 def rail_movements(entity: Ghost | Player) -> None:

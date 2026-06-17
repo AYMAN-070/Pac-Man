@@ -21,7 +21,7 @@ class Display:
 
     def __init__(self, engine: GameEngine, fps_limit: int,
                  renderer: Any, textures: dict[str, Any],
-                 font: Any, midxy: list[int]) -> None:
+                 font1: Any, font2: Any, midxy: list[int]) -> None:
         """  """ # TODO
         self.engine = engine
         self.init_engine()
@@ -34,7 +34,8 @@ class Display:
         self.delta_time = fps_limit / 1000
         self.renderer = renderer
         self.t = textures
-        self.font = font
+        self.font1 = font1
+        self.font2 = font2
         self.midxy = midxy
         self.cell = 0
 
@@ -162,9 +163,10 @@ class Display:
 
     def draw_text(self, string: str,
                   x: int, y: int,
-                  w: int, h: int) -> None:
+                  w: int, h: int,
+                  font: Any) -> None:
 
-        surface = s2_ttf.TTF_RenderText_Solid(self.font, string.encode(), self.txt_color)
+        surface = s2_ttf.TTF_RenderText_Solid(font, string.encode(), self.txt_color)
         texture = s2.SDL_CreateTextureFromSurface(self.renderer, surface)
         s2.SDL_FreeSurface(surface)
         dst = s2.SDL_Rect(x, y, w, h)        
@@ -175,7 +177,7 @@ class Display:
         """  """ #  TODO
 
         s_score = f"{self.engine.score}"
-        self.draw_text(s_score, self.midxy[0] - 20, 15, len(s_score) * 20, 50)
+        self.draw_text(s_score, self.midxy[0] - 20, 15, len(s_score) * 20, 50, self.font1)
 
         dst = s2.SDL_Rect(self.midxy[0] - 200, 5, 165, 70)        
         s2.SDL_RenderCopy(self.renderer, self.t["score"], None, dst)
@@ -185,12 +187,13 @@ class Display:
         
         dst = s2.SDL_Rect(int(self.midxy[0] / 3 ), -10, 130, 100)        
         s2.SDL_RenderCopy(self.renderer, self.t["level"], None, dst)
+        s_level = f"{self.engine.current_level}"
+        self.draw_text(s_level, int(self.midxy[0] / 3) + 140, 0, len(s_level) * 50, 80, self.font2)
 
         dst = s2.SDL_Rect(self.midxy[0] - 400, self.midxy[1] * 2 - 150, 420, 140)        
         s2.SDL_RenderCopy(self.renderer, self.t["time"], None, dst)
-
         s_time = f"{round(self.engine.time_left, 2)}"
-        self.draw_text(s_time, self.midxy[0] + 30, self.midxy[1] * 2 - 105, len(s_time) * 20, 50)
+        self.draw_text(s_time, self.midxy[0] + 30, self.midxy[1] * 2 - 105, len(s_time) * 20, 50, self.font1)
 
         col = self.player.lives - 1
         row = 0

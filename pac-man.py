@@ -56,8 +56,12 @@ class InputEngine:
         if s2_ttf.TTF_Init() != 0:
             raise InputError("Error. Can't init SDL_TTF")
         try:
-            self.font = s2_ttf.TTF_OpenFont(b"assets/MoonAndLatte-vn8LO.ttf", 24)
-            if not self.font:
+            self.font1 = s2_ttf.TTF_OpenFont(b"assets/MoonAndLatte-vn8LO.ttf", 24)
+            if not self.font1:
+                raise InputError("can't load font")
+            self.font2 = s2_ttf.TTF_OpenFont(b"assets/Shirtsy-8Z2A.ttf", 50)
+            if not self.font2:
+                s2_ttf.TTF_CloseFont(self.font1)
                 raise InputError("can't load font")
         except Exception:
             s2_ttf.TTF_Quit()
@@ -66,7 +70,8 @@ class InputEngine:
         check = s2.SDL_Init(s2.SDL_INIT_VIDEO)
 
         if check != 0:
-            s2_ttf.TTF_CloseFont(self.font)
+            s2_ttf.TTF_CloseFont(self.font1)
+            s2_ttf.TTF_CloseFont(self.font2)
             s2_ttf.TTF_Quit()
             raise InputError("Error. Can't init SDL2")
 
@@ -76,7 +81,8 @@ class InputEngine:
                                      D.w, D.h,
                                      s2.SDL_WINDOW_SHOWN | s2.SDL_WINDOW_RESIZABLE)
         if not self.window:
-            s2_ttf.TTF_CloseFont(self.font)
+            s2_ttf.TTF_CloseFont(self.font1)
+            s2_ttf.TTF_CloseFont(self.font2)
             s2_ttf.TTF_Quit()
             s2.SDL_Quit()
             raise InputError("Error. Can't init window")
@@ -96,7 +102,8 @@ class InputEngine:
                     s2.SDL_RENDERER_SOFTWARE
             )
         if not self.renderer:
-            s2_ttf.TTF_CloseFont(self.font)
+            s2_ttf.TTF_CloseFont(self.font1)
+            s2_ttf.TTF_CloseFont(self.font2)
             s2_ttf.TTF_Quit()
             s2.SDL_DestroyWindow(self.window)
             s2.SDL_Quit()
@@ -107,7 +114,7 @@ class InputEngine:
             self.textures = Textures(self.renderer)
             self.t = self.textures.load_textures()
             self.d = Display(self.engine, self.fps_limit,
-                             self.renderer, self.t, self.font,
+                             self.renderer, self.t, self.font1, self.font2,
                              self.midxy)
             if D.w < D.h:
                 self.d.cell = int((D.w - 250) / len(self.d.maze))
@@ -119,7 +126,8 @@ class InputEngine:
         except Exception:
             raise
         finally:
-            s2_ttf.TTF_CloseFont(self.font)
+            s2_ttf.TTF_CloseFont(self.font1)
+            s2_ttf.TTF_CloseFont(self.font2)
             s2_ttf.TTF_Quit()
             self.textures.destroy_all()
             s2.SDL_DestroyRenderer(self.renderer)
@@ -163,7 +171,6 @@ class InputEngine:
                     mouse_event = self.instructions_mouse
                     key_event = lambda *args: None
                     display = self.d.display_instructions
-            print(res)
 
     def core_while(
                 self,
