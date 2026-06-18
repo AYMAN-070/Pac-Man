@@ -30,6 +30,7 @@ TEXTURES_PATH = [
         "instructions.png",
         "scores.png",
         "crown.png",
+        "areyousure.png",
 
         "sprit_lives.png",
         "sprit_ghost1.png",

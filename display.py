@@ -258,6 +258,8 @@ class Display:
 
     def display_escape(self) -> None:
         
+        if self.printed:
+            return
         s2.SDL_RenderClear(self.renderer)
         s2.SDL_SetTextureColorMod(self.t['sprit_ghost1'], 65, 50, 80)
         s2.SDL_SetTextureColorMod(self.t['return_menu'], 140, 120, 180)
@@ -281,6 +283,8 @@ class Display:
         s2.SDL_SetTextureColorMod(self.t['sprit_ghost1'], 255, 255, 255)
         s2.SDL_SetTextureColorMod(self.t['return_menu'], 255, 255, 255)
         s2.SDL_RenderPresent(self.renderer)
+
+        self.printed = True
 
         
     def display_instructions(self) -> None:
@@ -351,6 +355,18 @@ class Display:
         if i == 0:
             msg = "Nobody succeeded the challenge"
             self.draw_text(msg, int(self.midxy[0] - len(msg) * 40 / 2), self.midxy[1] - 40, len(msg) * 40, 40, self.font1, "black")
+
+        s2.SDL_RenderPresent(self.renderer)
+        self.printed = True
+
+    def display_confirm_quit(self) -> None:
+
+        if self.printed:
+            return
+        s2.SDL_RenderClear(self.renderer)
+
+        dst = s2.SDL_Rect(int(self.midxy[0] - 400), self.midxy[1] - 200, 800, 400)
+        s2.SDL_RenderCopy(self.renderer, self.t['areyousure'], None, dst)
 
         s2.SDL_RenderPresent(self.renderer)
         self.printed = True
