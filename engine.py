@@ -273,9 +273,10 @@ class GameEngine:
                     valid_dirs.remove(opposite)
         return valid_dirs
 
-    def _find_shortest_path(self, start_x: int, start_y: int, target_x: int, target_y: int):
+    def _find_shortest_path(self, start_x: int, start_y: int,
+                            target_x: int, target_y: int):
         """
-        Trouve le chemin le plus court (BFS optimisé) et renvoie la 1ère direction.
+        Find the shortest path using BFS
         """
         # (x, y, 1ère_direction_prise)
         queue = [(start_x, start_y, None)]
