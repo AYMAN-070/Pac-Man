@@ -1,0 +1,164 @@
+
+import sdl2.ext.image as s2_img
+import sdl2.sdlttf as s2_ttf
+import sdl2 as s2
+import ctypes
+from typing import Any
+import time
+import random
+
+from engine import GameEngine
+from ghost import GhostState
+from player import Direction
+from display_base import BaseDisplay
+
+class DisplayUI(BaseDisplay):
+
+    def display_menu(self) -> None:
+        """  """ #  TODO
+        s2.SDL_RenderClear(self.renderer)
+
+        jump = 300
+        pading = 200
+        w = 400
+        h = 200
+        pos_w = int(self.midxy[0] -  (w/ 2))
+
+        dst = s2.SDL_Rect(int(self.midxy[0] -  (800 / 2)), -50, 800, 500)
+        s2.SDL_RenderCopy(self.renderer, self.t['menu_title'], None, dst)
+
+        dst = s2.SDL_Rect(pos_w, jump + pading, w, h)
+        s2.SDL_RenderCopy(self.renderer, self.t['menu_newgame'], None, dst)
+
+        dst = s2.SDL_Rect(pos_w, jump + pading * 2, w, h)
+        s2.SDL_RenderCopy(self.renderer, self.t['menu_scores'], None, dst)
+
+        dst = s2.SDL_Rect(pos_w, jump + pading * 3, w, h)
+        s2.SDL_RenderCopy(self.renderer, self.t['menu_instructions'], None, dst)
+
+        dst = s2.SDL_Rect(int(self.midxy[0] -  ((w - 100)/ 2)), jump + pading * 4, w - 100, h - 80)
+        s2.SDL_RenderCopy(self.renderer, self.t['menu_exit'], None, dst)
+
+        s2.SDL_RenderPresent(self.renderer)
+
+    def draw_return_menu(self) -> None:
+
+        scalex = int(self.midxy[0] / 10)
+        scaley = int(self.midxy[1] / 10)
+        dst = s2.SDL_Rect(scalex, scaley, 200, 100)
+        s2.SDL_RenderCopy(self.renderer, self.t["return_menu"], None, dst)
+
+    def display_escape(self) -> None:
+        
+        if self.printed:
+            return
+        s2.SDL_RenderClear(self.renderer)
+        s2.SDL_SetTextureColorMod(self.t['sprit_ghost1'], 65, 50, 80)
+        s2.SDL_SetTextureColorMod(self.t['return_menu'], 140, 120, 180)
+        
+        size = 50
+
+        size_cell = self.cell * size
+        w, h = 250, 250
+        src = s2.SDL_Rect(0 * w, 1 * h, w, h)
+
+        dst = s2.SDL_Rect(int(self.midxy[0] - size_cell / 2), int(self.midxy[1] - size_cell / 2), size_cell, size_cell)
+        s2.SDL_RenderCopy(self.renderer, self.t['sprit_ghost1'], src, dst)
+
+        size = 1000
+        dst = s2.SDL_Rect(int(self.midxy[0] - size / 2), int(self.midxy[1] - size / 2), size, size)
+        s2.SDL_RenderCopy(self.renderer, self.t["resume"], None, dst)
+
+        
+        self.draw_return_menu() 
+
+        s2.SDL_SetTextureColorMod(self.t['sprit_ghost1'], 255, 255, 255)
+        s2.SDL_SetTextureColorMod(self.t['return_menu'], 255, 255, 255)
+        s2.SDL_RenderPresent(self.renderer)
+
+        self.printed = True
+
+    def display_instructions(self) -> None:
+
+        if self.printed:
+            return
+        s2.SDL_RenderClear(self.renderer)
+
+        scalex = int(self.midxy[0] / 10)
+        scaley = int(self.midxy[1] / 10)
+        dst = s2.SDL_Rect(scalex, scaley, 200, 100)
+        s2.SDL_RenderCopy(self.renderer, self.t["return_menu"], None, dst)
+
+        mlp = self.midxy[1] / 1000
+        w = 1000 * mlp
+        h = 1600 * mlp
+
+        x = self.midxy[0] - w / 2
+        y = self.midxy[1] - h / 2
+
+        dst = s2.SDL_Rect(int(x), int(y), int(w), int(h))
+        s2.SDL_RenderCopy(self.renderer, self.t["instructions"], None, dst)
+
+        s2.SDL_RenderPresent(self.renderer)
+        self.printed = True
+
+    def display_scores(self) -> None:
+
+        if self.printed:
+            return
+        s2.SDL_RenderClear(self.renderer)
+
+        scalex = int(self.midxy[0] / 10)
+        scaley = int(self.midxy[1] / 10)
+        dst = s2.SDL_Rect(scalex, scaley, 200, 100)
+        s2.SDL_RenderCopy(self.renderer, self.t["return_menu"], None, dst)
+
+        jump = 100
+        jumps = 0
+        scale = self.midxy[1] / 1000
+
+        x = int(self.midxy[0] - (500) / 2)
+        dst = s2.SDL_Rect(x, 0, 500, 300)
+        s2.SDL_RenderCopy(self.renderer, self.t['scores'], None, dst)
+
+        i = 0
+        for elem in self.engine.highscore_manager.scores:
+            
+            s_name = f"{elem['name'].upper()} :"
+            s_score = f"{elem['score']}"
+            ws =  int(len(s_score) * 40 * scale)
+            w = int(len(s_name) * 40)
+
+
+            x = int(self.midxy[0] - (w + ws) / 2)
+            y = int(self.midxy[1] / 2 + jump * jumps * scale)
+            h = int(100 * scale)
+            self.draw_text(s_name, x, y, w, h, self.font2, random.choice(self.colors))
+            if i == 0:
+                size = int(100 * scale)
+                dst = s2.SDL_Rect(x, y - size, size, size)
+                s2.SDL_RenderCopy(self.renderer, self.t['crown'], None, dst)
+
+            h = int(80 * scale)
+            self.draw_text(s_score,int(x + w + 50), y, ws, h, self.font1, random.choice(self.colors))
+            jumps += 1
+            i += 1
+        if i == 0:
+            msg = "Nobody succeeded the challenge"
+            self.draw_text(msg, int(self.midxy[0] - len(msg) * 40 / 2), self.midxy[1] - 40, len(msg) * 40, 40, self.font1, "black")
+
+        s2.SDL_RenderPresent(self.renderer)
+        self.printed = True
+
+    def display_confirm_quit(self) -> None:
+
+        if self.printed:
+            return
+        s2.SDL_RenderClear(self.renderer)
+
+        dst = s2.SDL_Rect(int(self.midxy[0] - 400), self.midxy[1] - 200, 800, 400)
+        s2.SDL_RenderCopy(self.renderer, self.t['areyousure'], None, dst)
+
+        s2.SDL_RenderPresent(self.renderer)
+        self.printed = True
+
