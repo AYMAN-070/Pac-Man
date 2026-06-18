@@ -35,6 +35,7 @@ class Ghost:
         self.state: GhostState = GhostState.CHASE
         # Countdown timer to handle how long they stay scared or dead
         self.timer: float = 0.0
+        self.speed = 0.08
 
     def set_edible(self) -> None:
         """

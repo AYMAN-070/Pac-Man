@@ -36,6 +36,7 @@ class Player:
         # Directions
         self.current_direction: Direction = Direction.NONE
         self.next_direction: Direction = Direction.NONE
+        self.speed = 0.1
 
     def lose_life(self) -> None:
         """
