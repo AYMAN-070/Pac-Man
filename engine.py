@@ -14,8 +14,7 @@ import random
 def update_pos(entity: Ghost | Player, pos: str, goal: float, speed: float) -> float:
     """ decrease position value""" 
     rest = 0
-    if isinstance(entity, Player):
-        print(f"\nold {entity.xf} ; {entity.yf} | {speed}")
+
     if pos == "x":
         if goal > entity.xf and goal < (entity.xf + speed):
             rest = (entity.xf + speed) - goal
@@ -37,8 +36,6 @@ def update_pos(entity: Ghost | Player, pos: str, goal: float, speed: float) -> f
         entity.yf = entity.yf + speed
         entity.y = int(entity.yf)
 
-    if isinstance(entity, Player):
-        print (f"{pos} | new {entity.xf} ; {entity.yf} | rest {rest} | speed {speed}------------------------------")
     return rest
 
 
