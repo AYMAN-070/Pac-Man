@@ -326,9 +326,7 @@ class GameEngine:
         Handles the autonomous movement of all ghosts based on their state.
         """
         for ghost in self.ghosts:
-            if ghost.state == GhostState.DEAD:
-                ghost.speed = 0.25
-            elif ghost.state == GhostState.EDIBLE:
+            if ghost.state == GhostState.EDIBLE:
                 ghost.speed = 0.05
             else:
                 ghost.speed = 0.08
