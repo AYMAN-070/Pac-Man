@@ -273,6 +273,24 @@ class GameEngine:
                     valid_dirs.remove(opposite)
         return valid_dirs
 
+    def _find_shortest_path(self, start_x: int, start_y: int, target_x: int, target_y: int):
+        """
+        Trouve le chemin le plus court (BFS optimisé) et renvoie la 1ère direction.
+        """
+        # (x, y, 1ère_direction_prise)
+        queue = [(start_x, start_y, None)]
+        visited = {(start_x, start_y)}
+        for cx, cy, first_dir in queue:
+            if cx == target_x and cy == target_y:
+                return first_dir
+            for d in [Direction.UP, Direction.DOWN,
+                      Direction.LEFT, Direction.RIGHT]:
+                nx, ny = cx + d.value[0], cy + d.value[1]      
+                if (nx, ny) not in visited and not self.maze.is_wall(nx, ny):
+                    visited.add((nx, ny))
+                    queue.append((nx, ny, first_dir if first_dir else d))
+        return None
+
     def _move_ghosts(self) -> None:
         """
         Handles the autonomous movement of all ghosts based on their state.
@@ -300,16 +318,16 @@ class GameEngine:
                 else:
                     # distance between pacman & ghost
                     distance = abs(ghost.x - px) + abs(ghost.y - py)
-                    sniper = 20
+                    sniper = 10
                     if distance <= sniper:
-                        best_dir = min(valid_dirs,
-                                       key=lambda
-                                       m: abs((ghost.x + m.value[0]) - px)
-                                       + abs((ghost.y + m.value[1]) - py))
+                        best_dir = self._find_shortest_path(ghost.x, ghost.y,
+                                                            px, py)
+                        if best_dir is None or best_dir not in valid_dirs:
+                            best_dir = random.choice(valid_dirs)
                     # Pick a random valid direction!
-                    best_dir = random.choice(valid_dirs)
+                    else:
+                        best_dir = random.choice(valid_dirs)
                     dx, dy = best_dir.value
-
                 destx = ghost.x + dx
                 desty = ghost.y + dy
                 if destx < ghost.x:
