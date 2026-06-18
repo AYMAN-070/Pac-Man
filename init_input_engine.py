@@ -103,6 +103,7 @@ class InitInputEngine:
                 self.d.cell = int((D.h - 250) / len(self.d.maze))
             if self.d.cell < 50:
                 self.d.cell = 50
+                self.d.pov_rpg = True
         except Exception:
             self.free_all()
             raise

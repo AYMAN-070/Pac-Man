@@ -59,6 +59,9 @@ class InputEngine(InitInputEngine):
                     key_event,
                     display
                     )
+            if res == "confirm_quit":
+                if self.previous not in {"menu", "escape"}:
+                    res = "menu"
             match res:
                 case "exit":
                     return
@@ -166,7 +169,7 @@ class InputEngine(InitInputEngine):
         """  """ #  TODO
         data = dict()
 
-        jump = 210
+        jump = 310
         pading = 200
         w = 400
         h = 200

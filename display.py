@@ -39,7 +39,15 @@ class Display:
         self.midxy = midxy
         self.cell = 0
         self.printed = False
+        self.pov_rpg = False
 
+
+        self.ghost_color = {
+                0 : "sprit_ghost1",
+                1 : "sprit_ghost2",
+                2 : "sprit_ghost3",
+                3 : "sprit_ghost4",
+        }
         self.txt_color = {
                         "white":  s2.SDL_Color(255, 255, 255, 255),
                         "black":  s2.SDL_Color(0, 0, 0, 255),
@@ -76,7 +84,7 @@ class Display:
         """  """ #  TODO
         s2.SDL_RenderClear(self.renderer)
 
-        jump = 200
+        jump = 300
         pading = 200
         w = 400
         h = 200
@@ -128,6 +136,7 @@ class Display:
 
         for i, ghost in enumerate(self.ghosts):
             if not ghost.state == GhostState.DEAD:
+                color = self.ghost_color[ghost.color_id]
                 match ghost.direction:
                     case "UP":
                         row = 0
@@ -138,15 +147,15 @@ class Display:
                     case _:
                         row = 1
                 if ghost.state == GhostState.EDIBLE:
-                    s2.SDL_SetTextureColorMod(self.t['sprit_ghost1'], 100, 150, 255)
+                    s2.SDL_SetTextureColorMod(self.t[color], 100, 150, 255)
                 else:
-                    s2.SDL_SetTextureColorMod(self.t['sprit_ghost1'], 255, 255, 255)
+                    s2.SDL_SetTextureColorMod(self.t[color], 255, 255, 255)
 
                 col = ghost.rotasprit
                 w, h = 250, 250
                 src = s2.SDL_Rect(col * w, row * h, w, h)
                 dst = s2.SDL_Rect(int(ghost.xf * self.cell + padx), int(ghost.yf * self.cell + pady), self.cell, self.cell)
-                s2.SDL_RenderCopy(self.renderer, self.t['sprit_ghost1'], src, dst)
+                s2.SDL_RenderCopy(self.renderer, self.t[color], src, dst)
 
     def draw_text(self, string: str,
                   x: int, y: int,
@@ -211,7 +220,7 @@ class Display:
         player_distx_0 = (self.cell * self.player.xf + self.cell / 2)
         player_disty_0 = (self.cell * self.player.yf + self.cell / 2)
 
-        if True:
+        if self.pov_rpg:
             startx = int(self.midxy[0] - player_distx_0)
             starty = int(self.midxy[1] - player_disty_0)
             posy = starty

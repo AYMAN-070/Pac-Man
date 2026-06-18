@@ -34,6 +34,9 @@ TEXTURES_PATH = [
 
         "sprit_lives.png",
         "sprit_ghost1.png",
+        "sprit_ghost2.png",
+        "sprit_ghost3.png",
+        "sprit_ghost4.png",
         "sprit_pacman.png",
 ]
 
