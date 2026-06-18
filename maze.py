@@ -128,7 +128,6 @@ class Maze:
             for x in range(self.width):
                 if x == 0 or x == self.width - 1 or y == 0 or y == self.height - 1:
                     self.grid[y][x] = 1
-
                 elif x % 2 == 0 and y % 2 == 0:
                     self.grid[y][x] = 1
         self._carve_center()

@@ -58,3 +58,16 @@ class Player:
         self.desty: float = 0
         self.current_direction = Direction.NONE
         self.next_direction = Direction.NONE
+
+    def set_new_level_start(self, new_x: int, new_y: int) -> None:
+        """update start point for a new level"""
+        self.start_x = new_x
+        self.start_y = new_y
+        self.x = new_x
+        self.y = new_y
+        self.xf = new_x + 0.5
+        self.yf = new_y + 0.5
+        self.current_direction = Direction.NONE
+        self.next_direction = Direction.NONE
+        self.destx = -1
+        self.desty = 0

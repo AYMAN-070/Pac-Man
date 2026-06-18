@@ -111,62 +111,27 @@ class GameEngine:
         if height % 2 == 0:
             height += 1
         self.maze = Maze(width, height, seed)
-        # PLACE PLAYER
+        #   PLACE PLAYER
         start_x: int = width // 2
         start_y: int = height // 2
         lives: int = self.config.settings.get("lives", 3)
-        # If it's level 1, we create the player from scratch.
-        # else we only update coordinates so we don't reset lives!
         if self.current_level == 1:
             self.player = Player(start_x, start_y, lives)
         else:
-            self.player.x = start_x
-            self.player.y = start_y
-            self.player.start_x = start_x
-            self.player.start_y = start_y
-            self.player.xf = start_x + 0.5
-            self.player.yf = start_y + 0.5
-            self.player.current_direction = Direction.NONE
-            self.player.next_direction = Direction.NONE
-            self.player.destx = -1
-            self.player.desty = 0
+            self.player.set_new_level_start(start_x, start_y)
         # PLACE GHOSTS
         if self.current_level == 1:
             self.ghosts = [
-                Ghost(1, 1, 0),  # Top-Left (0 for Red)
-                Ghost(width - 2, 1, 1),  # Top-Right (1 for Pink)
-                Ghost(1, height - 2, 2),      # Bottom-Left (2 for Blue)
-                Ghost(width - 2, height - 2, 3)  # Bottom-Right (3 for Orange)
+                Ghost(1, 1, 0),                  # Top-Left
+                Ghost(width - 2, 1, 1),          # Top-Right
+                Ghost(1, height - 2, 2),         # Bottom-Left
+                Ghost(width - 2, height - 2, 3)  # Bottom-Right
             ]
         else:
-            # Rouge(Top-Left)
-            self.ghosts[0].x = 1
-            self.ghosts[0].y = 1
-            self.ghosts[0].start_x = 1
-            self.ghosts[0].start_y = 1
-            # Rose (Top-Right)
-            self.ghosts[1].x = width - 2
-            self.ghosts[1].y = 1
-            self.ghosts[1].start_x = width - 2
-            self.ghosts[1].start_y = 1
-            # Bleu (Bottom-Left)
-            self.ghosts[2].x = 1
-            self.ghosts[2].y = height - 2
-            self.ghosts[2].start_x = 1
-            self.ghosts[2].start_y = height - 2
-            # Orange(Bottom-Right)
-            self.ghosts[3].x = width - 2
-            self.ghosts[3].y = height - 2
-            self.ghosts[3].start_x = width - 2
-            self.ghosts[3].start_y = height - 2
-            for ghost in self.ghosts:
-                ghost.xf = ghost.start_x + 0.5
-                ghost.yf = ghost.start_y + 0.5
-                ghost.destx = -1
-                ghost.desty = 0
-                ghost.direction = "DOWN"
-                ghost.state = GhostState.CHASE
-                ghost.timer = 0.0
+            self.ghosts[0].reset_for_new_level(1, 1)
+            self.ghosts[1].reset_for_new_level(width - 2, 1)
+            self.ghosts[2].reset_for_new_level(1, height - 2)
+            self.ghosts[3].reset_for_new_level(width - 2, height - 2)
         self.time_left: float = self.config.settings.get("level_max_time",
                                                          90.0)
 
