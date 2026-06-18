@@ -11,15 +11,35 @@ from highscore import HighscoreManager
 import random
 
 
-def update_pos(entity: Ghost | Player, pos: str, speed: float) -> None:
+def update_pos(entity: Ghost | Player, pos: str, goal: float, speed: float) -> float:
     """ decrease position value""" 
-
+    rest = 0
+    if isinstance(entity, Player):
+        print(f"\nold {entity.xf} ; {entity.yf} | {speed}")
     if pos == "x":
-        entity.xf = round(entity.xf + speed, 2)
+        if goal > entity.xf and goal < (entity.xf + speed):
+            rest = (entity.xf + speed) - goal
+            speed = speed - rest
+        elif goal < entity.xf and goal > (entity.xf + speed):
+            rest = goal - (entity.xf + speed)
+            speed = speed + rest
+
+        entity.xf = entity.xf + speed
         entity.x = int(entity.xf)
     else:
-        entity.yf = round(entity.yf + speed, 2)
+        if goal > entity.yf and goal < (entity.yf + speed):
+            rest = (entity.yf + speed) - goal
+            speed = speed - rest
+        elif goal < entity.yf and goal > (entity.yf + speed):
+            rest = goal - (entity.yf + speed)
+            speed = speed + rest
+
+        entity.yf = entity.yf + speed
         entity.y = int(entity.yf)
+
+    if isinstance(entity, Player):
+        print (f"{pos} | new {entity.xf} ; {entity.yf} | rest {rest} | speed {speed}------------------------------")
+    return rest
 
 
 def rail_movements(entity: Ghost | Player) -> None:
@@ -27,44 +47,52 @@ def rail_movements(entity: Ghost | Player) -> None:
 
     # Use move method before use _rail_movements
 
-    midx = int(entity.xf) + 0.5
-    midy = int(entity.yf) + 0.5
-    xf = entity.xf
-    yf = entity.yf
-    desty = entity.desty
-    destx = entity.destx
-
-    if destx != -1:
-        dist_dest = round(math.sqrt(((destx - xf) ** 2)
-                                    + ((desty - yf) ** 2)), 2)
-        if dist_dest > 1 and (destx != xf or desty != yf):
-            # we are not aligned, go to center of the case
-            # the center is the shorter and mandatory passage to go dest
-            if midx != xf:
-                if xf < midx:
-                    update_pos(entity, "x", 0.1)
+    
+    move = True
+    speed = 0.1
+    if entity.destx != -1:
+        while move:
+            midx = int(entity.xf) + 0.5
+            midy = int(entity.yf) + 0.5
+            xf = entity.xf
+            yf = entity.yf
+            desty = entity.desty
+            destx = entity.destx
+            dist_dest = math.sqrt(((destx - xf) ** 2)
+                                        + ((desty - yf) ** 2))
+            if dist_dest > 1 and (destx != xf or desty != yf):
+                # we are not aligned, go to center of the case
+                # the center is the shorter and mandatory passage to go dest
+                if midx != xf:
+                    if xf < midx:
+                        speed = update_pos(entity, "x", midx, speed)
+                    else:
+                        speed = update_pos(entity, "x", midx, -speed)
                 else:
-                    update_pos(entity, "x", -0.1)
+                    if yf < midy:
+                        speed = update_pos(entity, "y", midy, speed)
+                    else:
+                        speed = update_pos(entity, "y", midy, -speed)
+                if speed == 0:
+                    move = False
+            elif dist_dest > 0:
+                # we are aligned now go in line to the dest
+                if destx != xf:
+                    if xf < destx:
+                        speed = update_pos(entity, "x", destx, speed)
+                    else:
+                        speed = update_pos(entity, "x", destx, -speed)
+                else:
+                    if yf < desty:
+                        speed = update_pos(entity, "y", desty, speed)
+                    else:
+                        speed = update_pos(entity, "y", desty, -speed)
+                if speed != 0:
+                   entity.destx = -1
+                move = False
             else:
-                if yf < midy:
-                    update_pos(entity, "y", 0.1)
-                else:
-                    update_pos(entity, "y", -0.1)
-        elif dist_dest > 0:
-            # we are aligned now go in line to the dest
-            if destx != xf:
-                if xf < destx:
-                    update_pos(entity, "x", 0.1)
-                else:
-                    update_pos(entity, "x", -0.1)
-            else:
-                if yf < desty:
-                    update_pos(entity, "y", 0.1)
-                else:
-                    update_pos(entity, "y", -0.1)
-        else:
-            # we are arrived
-            entity.destx = -1
+                # we are arrived
+                entity.destx = -1
 
 
 class GameEngine:

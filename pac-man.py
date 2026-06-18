@@ -50,6 +50,7 @@ class InputEngine(InitInputEngine):
         key_event = lambda *args: None
         display = self.d.display_menu
         while game:
+            self.d.printed = False
             res = self.core_while(
                     mouse_event,
                     key_event,
@@ -113,6 +114,7 @@ class InputEngine(InitInputEngine):
                                 self.d.cell = int((w - 250) / len(self.d.maze))
                             else:
                                 self.d.cell = int((h - 250) / len(self.d.maze))
+                            self.d.printed = False
 
                     case s2.SDL_MOUSEBUTTONUP:
                         res = mousebuttonup(event)

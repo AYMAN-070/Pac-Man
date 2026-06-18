@@ -38,8 +38,30 @@ class Display:
         self.font2 = font2
         self.midxy = midxy
         self.cell = 0
+        self.printed = False
 
-        self.txt_color = s2.SDL_Color(255, 255, 255, 255)
+        self.txt_color = {
+                        "white":  s2.SDL_Color(255, 255, 255, 255),
+                        "black":  s2.SDL_Color(0, 0, 0, 255),
+                        "red":    s2.SDL_Color(220, 20, 60, 255),
+                        "yellow": s2.SDL_Color(255, 215, 0, 255),
+                        "blue":   s2.SDL_Color(30, 144, 255, 255),
+                        "pink":   s2.SDL_Color(255, 20, 147, 255),
+                        "green":  s2.SDL_Color(50, 205, 50, 255),
+                        "orange": s2.SDL_Color(255, 140, 0, 255),
+                        "purple": s2.SDL_Color(150, 80, 210, 255),
+                    }
+        self.colors = [
+                        "white",
+                        "black",
+                        "red",
+                        "yellow",
+                        "blue",
+                        "pink",
+                        "green",
+                        "orange",
+                        "purple",
+        ]
 
     def init_engine(self):
         """  """ #  TODO
@@ -129,9 +151,10 @@ class Display:
     def draw_text(self, string: str,
                   x: int, y: int,
                   w: int, h: int,
-                  font: Any) -> None:
+                  font: Any,
+                  color: str) -> None:
 
-        surface = s2_ttf.TTF_RenderText_Solid(font, string.encode(), self.txt_color)
+        surface = s2_ttf.TTF_RenderText_Solid(font, string.encode('utf-8'), self.txt_color[color])
         texture = s2.SDL_CreateTextureFromSurface(self.renderer, surface)
         s2.SDL_FreeSurface(surface)
         dst = s2.SDL_Rect(x, y, w, h)        
@@ -142,7 +165,7 @@ class Display:
         """  """ #  TODO
 
         s_score = f"{self.engine.score}"
-        self.draw_text(s_score, self.midxy[0] - 20, 15, len(s_score) * 20, 50, self.font1)
+        self.draw_text(s_score, self.midxy[0] - 20, 15, len(s_score) * 20, 50, self.font1, "orange")
 
         dst = s2.SDL_Rect(self.midxy[0] - 200, 5, 165, 70)        
         s2.SDL_RenderCopy(self.renderer, self.t["score"], None, dst)
@@ -153,12 +176,12 @@ class Display:
         dst = s2.SDL_Rect(int(self.midxy[0] / 3 ), -10, 130, 100)        
         s2.SDL_RenderCopy(self.renderer, self.t["level"], None, dst)
         s_level = f"{self.engine.current_level}"
-        self.draw_text(s_level, int(self.midxy[0] / 3) + 140, 0, len(s_level) * 50, 80, self.font2)
+        self.draw_text(s_level, int(self.midxy[0] / 3) + 140, 0, len(s_level) * 50, 80, self.font2, "blue")
 
         dst = s2.SDL_Rect(self.midxy[0] - 400, self.midxy[1] * 2 - 150, 420, 140)        
         s2.SDL_RenderCopy(self.renderer, self.t["time"], None, dst)
         s_time = f"{round(self.engine.time_left, 2)}"
-        self.draw_text(s_time, self.midxy[0] + 30, self.midxy[1] * 2 - 105, len(s_time) * 20, 50, self.font1)
+        self.draw_text(s_time, self.midxy[0] + 30, self.midxy[1] * 2 - 105, len(s_time) * 20, 50, self.font1, "white")
 
         col = self.player.lives - 1
         row = 0
@@ -262,6 +285,8 @@ class Display:
         
     def display_instructions(self) -> None:
 
+        if self.printed:
+            return
         s2.SDL_RenderClear(self.renderer)
 
         scalex = int(self.midxy[0] / 10)
@@ -280,9 +305,12 @@ class Display:
         s2.SDL_RenderCopy(self.renderer, self.t["instructions"], None, dst)
 
         s2.SDL_RenderPresent(self.renderer)
+        self.printed = True
 
     def display_scores(self) -> None:
 
+        if self.printed:
+            return
         s2.SDL_RenderClear(self.renderer)
 
         scalex = int(self.midxy[0] / 10)
@@ -290,26 +318,39 @@ class Display:
         dst = s2.SDL_Rect(scalex, scaley, 200, 100)
         s2.SDL_RenderCopy(self.renderer, self.t["return_menu"], None, dst)
 
-        jump = 30
+        jump = 100
         jumps = 0
-        scale = self.midxy[1] / 10
-        x = int(self.midxy[0] / 2 * scale)
-        if len(self.engine.highscore_manager.scores) == 0:
-            self.engine.highscore_manager.scores.append({"name": "bob","score": 400})
-            self.engine.highscore_manager.scores.append({"name": "boby","score": 403132124141251210})
+        scale = self.midxy[1] / 1000
+
+        x = int(self.midxy[0] - (500) / 2)
+        dst = s2.SDL_Rect(x, 0, 500, 300)
+        s2.SDL_RenderCopy(self.renderer, self.t['scores'], None, dst)
+
+        i = 0
         for elem in self.engine.highscore_manager.scores:
-            y = int(self.midxy[1] / 2 + jump * jumps * scale)
-            s_name = f"{elem['name']}"
-            w = int(len(s_name) * 20)
-            h = int(80 * scale)
-            self.draw_text(s_name, x, y, w, h, self.font1)
+            
+            s_name = f"{elem['name'].upper()} :"
             s_score = f"{elem['score']}"
-            w =  int(len(s_score) * 50 * scale)
+            ws =  int(len(s_score) * 40 * scale)
+            w = int(len(s_name) * 40)
+
+
+            x = int(self.midxy[0] - (w + ws) / 2)
+            y = int(self.midxy[1] / 2 + jump * jumps * scale)
+            h = int(100 * scale)
+            self.draw_text(s_name, x, y, w, h, self.font2, random.choice(self.colors))
+            if i == 0:
+                size = int(100 * scale)
+                dst = s2.SDL_Rect(x, y - size, size, size)
+                s2.SDL_RenderCopy(self.renderer, self.t['crown'], None, dst)
+
             h = int(80 * scale)
-            self.draw_text(s_score,int( x + len(s_name) * 50 * scale + 20), y, w, h, self.font1)
+            self.draw_text(s_score,int(x + w + 50), y, ws, h, self.font1, random.choice(self.colors))
             jumps += 1
-        if len(self.engine.highscore_manager.scores) == 0:
-            print("e")
-        print(len(self.engine.highscore_manager.scores))
+            i += 1
+        if i == 0:
+            msg = "Nobody succeeded the challenge"
+            self.draw_text(msg, int(self.midxy[0] - len(msg) * 40 / 2), self.midxy[1] - 40, len(msg) * 40, 40, self.font1, "black")
 
         s2.SDL_RenderPresent(self.renderer)
+        self.printed = True
