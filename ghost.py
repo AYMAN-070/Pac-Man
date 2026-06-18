@@ -69,3 +69,17 @@ class Ghost:
                 self.state = GhostState.CHASE
                 self.timer = 0.0
                 self.current_direction = Direction.NONE
+
+    def reset_for_new_level(self, new_x: int, new_y: int) -> None:
+        """update ghosts state for a new level"""
+        self.start_x = new_x
+        self.start_y = new_y
+        self.x = new_x
+        self.y = new_y
+        self.xf = new_x + 0.5
+        self.yf = new_y + 0.5
+        self.destx = -1
+        self.desty = 0
+        self.direction = "DOWN"
+        self.state = GhostState.CHASE
+        self.timer = 0.0

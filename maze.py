@@ -112,7 +112,7 @@ class Maze:
         for y in range(center_y - 4, center_y + 5):
             for x in range(center_x - 6, center_x + 7):
                 if 0 < y < self.height - 1 and 0 < x < self.width - 1:
-                    self.grid[y][x] = 0 
+                    self.grid[y][x] = 0
         self.pattern_42()
         for x, y in self.pattern:
             self.grid[y][x] = 1
@@ -124,12 +124,14 @@ class Maze:
         """
         self.grid = [[0 for _ in range(self.width)]
                      for _ in range(self.height)]
-        for x in range(self.width):
-            self.grid[0][x] = 1
-            self.grid[self.height - 1][x] = 1
         for y in range(self.height):
-            self.grid[y][0] = 1
-            self.grid[y][self.width - 1] = 1
+            for x in range(self.width):
+                if (x == 0 or x == self.width - 1
+                        or y == 0 or y == self.height - 1):
+                    self.grid[y][x] = 1
+                elif x % 2 == 0 and y % 2 == 0:
+                    self.grid[y][x] = 1
+        self._carve_center()
 
     def _place_items(self) -> None:
         """
