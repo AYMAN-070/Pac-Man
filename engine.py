@@ -245,7 +245,8 @@ class GameEngine:
             # generate a new random maze
             self.load_level()
 
-    def _get_valid_directions(self, x: int, y: int) -> list:
+    def _get_valid_directions(self, x: int, y: int,
+                              current_direction: str = "") -> list:
         """
         Returns a list of valid directions.
         """
@@ -257,6 +258,19 @@ class GameEngine:
             # If is not a wall, it's a valid move
             if not self.maze.is_wall(x + dx, y + dy):
                 valid_dirs.append(d)
+            if len(valid_dirs) > 1 and current_direction:
+                opposite = None
+                if current_direction == "UP":
+                    opposite = Direction.DOWN
+                elif current_direction == "DOWN":
+                    opposite = Direction.UP
+                elif current_direction == "LEFT":
+                    opposite = Direction.RIGHT
+                elif current_direction == "RIGHT":
+                    opposite = Direction.LEFT
+                # we delete the opposit turn from the list
+                if opposite in valid_dirs:
+                    valid_dirs.remove(opposite)
         return valid_dirs
 
     def _move_ghosts(self) -> None:
@@ -271,7 +285,10 @@ class GameEngine:
                 px = self.player.x
                 py = self.player.y
                 # Find all directions the ghost can legally move to
-                valid_dirs = self._get_valid_directions(ghost.x, ghost.y)
+                valid_dirs = self._get_valid_directions(
+                    ghost.x,
+                    ghost.y,
+                    ghost.direction)
                 if not valid_dirs:
                     continue  # juste par securité
                 if ghost.state == GhostState.EDIBLE:
@@ -281,6 +298,14 @@ class GameEngine:
                                    + abs((ghost.y + m.value[1]) - py))
                     dx, dy = best_dir.value
                 else:
+                    # distance between pacman & ghost
+                    distance = abs(ghost.x - px) + abs(ghost.y - py)
+                    sniper = 20
+                    if distance <= sniper:
+                        best_dir = min(valid_dirs,
+                                       key=lambda
+                                       m: abs((ghost.x + m.value[0]) - px)
+                                       + abs((ghost.y + m.value[1]) - py))
                     # Pick a random valid direction!
                     best_dir = random.choice(valid_dirs)
                     dx, dy = best_dir.value
