@@ -94,6 +94,11 @@ class InputEngine(InitInputEngine):
                     mouse_event = self.confirm_quit_mouse
                     key_event = lambda *args: None
                     display = self.d.display_confirm_quit
+                case "end":
+                    mouse_event = lambda *args: None
+                    key_event = lambda *args: None
+                    display = lambda *args: None
+
 
 
     def core_while(
@@ -105,6 +110,7 @@ class InputEngine(InitInputEngine):
         """  """ #  TODO
 
         game = True
+        text = ""
 
         fps_limit = self.fps_limit
         while game:
@@ -135,7 +141,13 @@ class InputEngine(InitInputEngine):
                         res = keydown(event)
                         if res:
                             return res
-            display()
+                    case s2.SDL_TEXTINPUT:
+                        text += event.text.text.decode()
+                print(text)
+
+            res = display()
+            if res:
+                return res
             limit_fps(start_frame, fps_limit)
 
     def newgame_keys(self, event) -> str:

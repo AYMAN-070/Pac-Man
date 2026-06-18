@@ -27,8 +27,11 @@ class Display:
         self.init_engine()
 
         self.rotasprit = 3
+        self.rotadeath = -0.1
         self.n_rotasprit = 4
         self.sprits_rate = 0
+        self.time = time.time()
+        self.end = False
     
         self.p_direction = ""
         self.delta_time = fps_limit / 1000
@@ -73,10 +76,12 @@ class Display:
 
     def init_engine(self):
         """  """ #  TODO
-
+        
         self.maze = self.engine.maze.grid
         self.player = self.engine.player
         self.ghosts = self.engine.ghosts
+        self.rotadeath = -0.1
+        self.end = False
         for ghost in self.ghosts:
             ghost.rotasprit = random.randint(0, 4)
 
@@ -127,9 +132,9 @@ class Display:
         col = self.rotasprit
         w, h = 250, 250
         src = s2.SDL_Rect(col * w, row * h, w, h)
-        
         dst = s2.SDL_Rect(int(self.player.xf * self.cell + padx), int(self.player.yf * self.cell + pady), self.cell, self.cell)
         s2.SDL_RenderCopy(self.renderer, self.t["sprit_pacman"], src, dst)
+
 
     def draw_ghosts(self, padx: int, pady: int) -> None:
         """  """ #  TODO
@@ -210,7 +215,36 @@ class Display:
 
         self.sprits_rate = (self.sprits_rate + 1) % 5
 
-    def display_and_compute_game(self) -> None:
+
+    def game_over_process(self, padx: int, pady: int) -> str:
+
+        if self.rotadeath < 6.1:
+            self.rotadeath += 0.1
+            row = int(self.rotadeath)
+        else:
+            row = 7
+        
+        w, h = 600, 250
+        src = s2.SDL_Rect(0, row * h, w, h)
+        dst = s2.SDL_Rect(int(self.player.xf * self.cell + padx), int(self.player.yf * self.cell + pady), round(self.cell / 250 * 600), self.cell)
+        s2.SDL_RenderCopy(self.renderer, self.t["sprit_pacman_death"], src, dst)
+
+        msg = "GAME   OVER"
+        w = int(110 * len(msg))
+        h = 500
+        x = int(self.midxy[0] - w / 2)
+        y = int(self.midxy[1] - h / 2)
+        self.draw_text(msg, x, y, w, h, self.font2, "black")
+
+        if not self.end:
+            self.end = True
+            self.time = time.time()
+        now = time.time()
+        if now - self.time > 5:
+            return "end"
+        return ""
+
+    def display_and_compute_game(self) -> str:
         """  """ #  TODO
 
         s2.SDL_RenderClear(self.renderer)
@@ -239,19 +273,24 @@ class Display:
                         self.draw_cell("wall", posx, posy)
                     case 2:  # PACGUM
                         self.draw_cell("pacgum", posx, posy)
-                        pass
                     case 3:  # SUPERPACGUM
                         self.draw_cell("megapacgum", posx, posy)
-                        pass
                 posx += self.cell
             posy += self.cell
   
         padx = startx - self.cell / 2
         pady = starty - self.cell / 2
         self.draw_ghosts(padx, pady)
-        self.draw_pacman(padx, pady) 
+        if not self.engine.is_game_over:
+            self.draw_pacman(padx, pady) 
+        else:
+            end = self.game_over_process(padx, pady)
+            if end:
+                self.draw_infos()
+                self.rotate_all_sprits()
+                s2.SDL_RenderPresent(self.renderer)
+                return end
         self.draw_infos()
-        
         self.rotate_all_sprits()
         s2.SDL_RenderPresent(self.renderer)
 
