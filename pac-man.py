@@ -46,10 +46,14 @@ class InputEngine(InitInputEngine):
         """  """ #  TODO
         game = True
 
+        res = "menu"
         mouse_event = self.menu_mouse
         key_event = lambda *args: None
         display = self.d.display_menu
         while game:
+            self.d.printed = False
+            if res != "confirm_quit":
+                self.previous = res
             res = self.core_while(
                     mouse_event,
                     key_event,
@@ -66,10 +70,11 @@ class InputEngine(InitInputEngine):
                     mouse_event = lambda *args: None
                     key_event = self.newgame_keys
                     display = self.d.display_and_compute_game
-                    self.engine = GameEngine(self.config_path)
-                    self.player = self.engine.player
-                    self.d.engine = self.engine
-                    self.d.init_engine()
+                    if self.previous != "escape":
+                        self.engine = GameEngine(self.config_path)
+                        self.player = self.engine.player
+                        self.d.engine = self.engine
+                        self.d.init_engine()
                 case "escape":
                     mouse_event = self.escape_mouse
                     key_event = lambda *args: None
@@ -82,6 +87,10 @@ class InputEngine(InitInputEngine):
                     mouse_event = self.instructions_mouse
                     key_event = lambda *args: None
                     display = self.d.display_scores
+                case "confirm_quit":
+                    mouse_event = self.confirm_quit_mouse
+                    key_event = lambda *args: None
+                    display = self.d.display_confirm_quit
 
 
     def core_while(
@@ -113,6 +122,7 @@ class InputEngine(InitInputEngine):
                                 self.d.cell = int((w - 250) / len(self.d.maze))
                             else:
                                 self.d.cell = int((h - 250) / len(self.d.maze))
+                            self.d.printed = False
 
                     case s2.SDL_MOUSEBUTTONUP:
                         res = mousebuttonup(event)
@@ -183,7 +193,7 @@ class InputEngine(InitInputEngine):
         h_lu = jump + pading * 4
         h_rd = h_lu + 110
         inside = {"lu": (w_lu, h_lu), "rd": (w_rd, h_rd)}
-        data.update({"exit": inside})
+        data.update({"confirm_quit": inside})
 
         return data
 
@@ -204,7 +214,7 @@ class InputEngine(InitInputEngine):
         luy = int(self.midxy[1] / 10)
         if lux < event.button.x < lux + size:
             if luy < event.button.y < luy + (size - ypad):
-                return "menu"
+                return "confirm_quit"
         return ""
     
     def escape_mouse(self, event: Any) -> str:
@@ -230,6 +240,29 @@ class InputEngine(InitInputEngine):
             if ret:
                 return ret
         return ""
+
+    def confirm_quit_mouse(self, event: Any) -> str:
+
+        if event.button.button == s2.SDL_BUTTON_LEFT:
+
+            sizex = 800
+            sizey = 400
+            gapx = 30
+            gapy = 60
+            lux = self.midxy[0] - 400
+            luy = self.midxy[1] - 170
+
+            if lux + gapx < event.button.x < lux + sizex - gapx:
+                if luy + gapy < event.button.y < luy + sizey - gapy:
+                    if event.button.x < self.midxy[0] - 110:
+                        return self.previous
+                    if event.button.x > self.midxy[0] + 110:
+                        if self.previous == "menu":
+                            return "exit"
+                        else:
+                            return "menu"
+        return ""
+
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
