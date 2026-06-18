@@ -44,9 +44,8 @@ def rail_movements(entity: Ghost | Player) -> None:
 
     # Use move method before use _rail_movements
 
-    
     move = True
-    speed = 0.1
+    speed = entity.speed
     if entity.destx != -1:
         while move:
             midx = int(entity.xf) + 0.5
@@ -56,7 +55,7 @@ def rail_movements(entity: Ghost | Player) -> None:
             desty = entity.desty
             destx = entity.destx
             dist_dest = math.sqrt(((destx - xf) ** 2)
-                                        + ((desty - yf) ** 2))
+                                  + ((desty - yf) ** 2))
             if dist_dest > 1 and (destx != xf or desty != yf):
                 # we are not aligned, go to center of the case
                 # the center is the shorter and mandatory passage to go dest
@@ -186,6 +185,11 @@ class GameEngine:
     def toggle_invincibility(self) -> None:
         """ Activate or desactivate cheat mode."""
         self.cheat_invincible = not self.cheat_invincible
+
+    def cheat_next_level(self) -> None:
+        """pass to next level"""
+        self.current_level += 1
+        self.load_level()
 
     def _check_collisions(self) -> None:
         """
@@ -322,6 +326,10 @@ class GameEngine:
         Handles the autonomous movement of all ghosts based on their state.
         """
         for ghost in self.ghosts:
+            if ghost.state == GhostState.EDIBLE:
+                ghost.speed = 0.05
+            else:
+                ghost.speed = 0.08
             if ghost.state == GhostState.DEAD:
                 continue
             if ghost.destx == -1:
