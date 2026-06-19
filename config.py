@@ -15,12 +15,10 @@ class GameConfig:
         self.settings: Dict[str, Any] = {
             "highscore_filename": "highscores.json",
             "lives": 3,
-            "pacgum": 42,
             "points_per_pacgum": 10,
             "points_per_super_pacgum": 50,
             "points_per_ghost": 200,
             "seed": 42,
-            "level_max_time": 90.0,
             "level": [
                 {"width": 21, "height": 21},  # Niveau 1
                 {"width": 25, "height": 25},  # Niveau 2

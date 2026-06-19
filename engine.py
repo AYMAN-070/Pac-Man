@@ -11,7 +11,8 @@ from highscore import HighscoreManager
 import random
 
 
-def update_pos(entity: Ghost | Player, pos: str, goal: float, speed: float) -> float:
+def update_pos(entity: Ghost | Player, pos: str, goal: float,
+               speed: float) -> float:
     """ decrease position value""" 
     rest = 0
 
@@ -84,7 +85,7 @@ def rail_movements(entity: Ghost | Player) -> None:
                     else:
                         speed = update_pos(entity, "y", desty, -speed)
                 if speed != 0:
-                   entity.destx = -1
+                    entity.destx = -1
                 move = False
             else:
                 # we are arrived
@@ -156,8 +157,12 @@ class GameEngine:
             self.ghosts[1].reset_for_new_level(width - 2, 1)
             self.ghosts[2].reset_for_new_level(1, height - 2)
             self.ghosts[3].reset_for_new_level(width - 2, height - 2)
-        self.time_left: float = self.config.settings.get("level_max_time",
-                                                         90.0)
+        empty_cells = 0
+        for y in range(height):
+            for x in range(width):
+                if not self.maze.is_wall(x, y):
+                    empty_cells += 1
+        self.time_left = float(empty_cells)
 
     def _move_player(self) -> None:
         """
