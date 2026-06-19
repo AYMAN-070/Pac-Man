@@ -22,12 +22,12 @@ class BaseDisplay:
 
     def __init__(self, engine: GameEngine, fps_limit: int,
                  renderer: Any, textures: dict[str, Any],
-                 font1: Any, font2: Any, midxy: list[int]) -> None:
+                 font1: Any, font2: Any, font3: Any, midxy: list[int]) -> None:
         """  """ # TODO
         self.engine = engine
         self.init_engine()
 
-        self.rotasprit = 3
+        self.rotasprit = 1
         self.rotadeath = -0.1
         self.n_rotasprit = 4
         self.sprits_rate = 0
@@ -40,11 +40,14 @@ class BaseDisplay:
         self.t = textures
         self.font1 = font1
         self.font2 = font2
+        self.font3 = font3
         self.midxy = midxy
         self.cell = 0
         self.printed = False
         self.pov_rpg = False
         self.text = ""
+        self.i = 0
+        self.seed = 0
 
 
         self.ghost_color = {
@@ -78,11 +81,10 @@ class BaseDisplay:
 
     def init_engine(self):
         """  """ #  TODO
-        
         self.maze = self.engine.maze.grid
         self.player = self.engine.player
         self.ghosts = self.engine.ghosts
-        self.rotasprit = 3
+        self.rotasprit = 1
         self.rotadeath = -0.1
         self.end = False
         for ghost in self.ghosts:

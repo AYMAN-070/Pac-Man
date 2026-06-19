@@ -45,12 +45,17 @@ class InitInputEngine:
         if s2_ttf.TTF_Init() != 0:
             raise InputError("Error. Can't init SDL_TTF")
         try:
-            self.font1 = s2_ttf.TTF_OpenFont(b"assets/MoonAndLatte-vn8LO.ttf", 24)
+            self.font1 = s2_ttf.TTF_OpenFont(b"assets/MoonAndLatte-vn8LO.ttf", 50)
             if not self.font1:
                 raise InputError("can't load font")
             self.font2 = s2_ttf.TTF_OpenFont(b"assets/Shirtsy-8Z2A.ttf", 50)
             if not self.font2:
                 s2_ttf.TTF_CloseFont(self.font1)
+                raise InputError("can't load font")
+            self.font3 = s2_ttf.TTF_OpenFont(b"assets/Brookeshappell8-eoKB.ttf", 50)
+            if not self.font3:
+                s2_ttf.TTF_CloseFont(self.font1)
+                s2_ttf.TTF_CloseFont(self.font2)
                 raise InputError("can't load font")
         except Exception:
             s2_ttf.TTF_Quit()
@@ -96,19 +101,24 @@ class InitInputEngine:
             self.textures = Textures(self.renderer)
             self.t = self.textures.load_textures()
             self.d = Display(self.engine, self.fps_limit,
-                             self.renderer, self.t, self.font1, self.font2,
+                             self.renderer, self.t,
+                             self.font1, self.font2, self.font3,
                              self.midxy)
-            if D.w < D.h:
-                self.d.cell = int((D.w - 250) / len(self.d.maze))
-            else:
-                self.d.cell = int((D.h - 250) / len(self.d.maze))
-            if self.d.cell < 50:
-                self.d.cell = 50
-                self.d.pov_rpg = True
+            self.set_cell_size(D.w, D.h)
         except Exception:
             self.free_all()
             raise
 
+    def set_cell_size(self, w: int, h: int) -> None:
+        if w < h:
+            self.d.cell = int((w - 250) / len(self.d.maze))
+        else:
+            self.d.cell = int((h - 250) / len(self.d.maze))
+        if self.d.cell < 50:
+            self.d.cell = 50
+            self.d.pov_rpg = True
+        else:
+            self.d.pov_rpg = False
 
     def free_all(self) -> None:
         self.close_fonts()
@@ -120,4 +130,5 @@ class InitInputEngine:
     def close_fonts(self) -> None:
         s2_ttf.TTF_CloseFont(self.font1)
         s2_ttf.TTF_CloseFont(self.font2)
+        s2_ttf.TTF_CloseFont(self.font3)
         s2_ttf.TTF_Quit()

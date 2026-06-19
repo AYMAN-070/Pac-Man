@@ -3,6 +3,7 @@ import sys
 import ctypes
 from enum import IntEnum
 from typing import Callable, Any
+import random
 try:
     import sdl2 as s2
     import sdl2.ext.image as s2_img
@@ -14,7 +15,6 @@ except ImportError as e:
     sys.exit(1)
 from engine import GameEngine
 from textures import Textures
-from display import Display
 from player import Direction
 from init_input_engine import InitInputEngine
 
@@ -65,6 +65,10 @@ class SDLCoreEngine(InitInputEngine):
                 case "exit":
                     return
                 case "menu":
+                    print(self.previous, "prev")
+                    if self.previous not in {"instructions", "scores", "menu"}:
+                        self.d.rotasprit = 1
+                        self.d.rotadeath = -0.1
                     mouse_event = self.menu_mouse
                     key_event = lambda *args: None
                     display = self.d.display_menu
@@ -77,6 +81,7 @@ class SDLCoreEngine(InitInputEngine):
                         self.player = self.engine.player
                         self.d.engine = self.engine
                         self.d.init_engine()
+                        self.set_cell_size(self.midxy[0] * 2, self.midxy[1] * 2)
                 case "escape":
                     mouse_event = self.escape_mouse
                     key_event = lambda *args: None
@@ -86,6 +91,7 @@ class SDLCoreEngine(InitInputEngine):
                     key_event = lambda *args: None
                     display = self.d.display_instructions
                 case "scores":
+                    self.d.seed = random.randint(0, 10000)
                     mouse_event = self.instructions_mouse
                     key_event = lambda *args: None
                     display = self.d.display_scores
@@ -94,6 +100,7 @@ class SDLCoreEngine(InitInputEngine):
                     key_event = lambda *args: None
                     display = self.d.display_confirm_quit
                 case "end":
+                    self.d.i = 0
                     self.d.text = ""
                     self.text_mode = True
                     mouse_event = self.end_mouse
@@ -127,10 +134,7 @@ class SDLCoreEngine(InitInputEngine):
                             h = event.window.data2
                             self.midxy[0] = int(w / 2)
                             self.midxy[1] = int(h / 2)
-                            if w < h:
-                                self.d.cell = int((w - 250) / len(self.d.maze))
-                            else:
-                                self.d.cell = int((h - 250) / len(self.d.maze))
+                            self.set_cell_size(w, h)
                             self.d.printed = False
 
                     case s2.SDL_MOUSEBUTTONUP:

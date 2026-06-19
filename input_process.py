@@ -52,33 +52,33 @@ class InputEngine(SDLCoreEngine):
         """  """ #  TODO
         data = dict()
 
-        jump = 310
-        pading = 200
-        w = 400
-        h = 200
+        jump = 350
+        w = int(self.midxy[1] / 2)
+        h = int(self.midxy[1] / 4)
+        pading = int(w / 2)
         pos_w = int(self.midxy[0] -  (w/ 2))
 
-        w_lu = self.midxy[0] - 155  # left up
-        w_rd = self.midxy[0] + 155  # right down
+        x_lu = self.midxy[0] - w / 2  # left up
+        x_rd = self.midxy[0] + w / 2  # right down
 
-        h_lu = jump + pading
-        h_rd = h_lu + 180
-        inside = {"lu": (w_lu, h_lu), "rd": (w_rd, h_rd)}
+        y_lu = jump + pading
+        y_rd = y_lu + h
+        inside = {"lu": (x_lu, y_lu), "rd": (x_rd, y_rd)}
         data.update({"newgame": inside})
 
-        h_lu = jump + pading * 2
-        h_rd = h_lu + 180
-        inside = {"lu": (w_lu, h_lu), "rd": (w_rd, h_rd)}
+        y_lu = jump + pading * 2
+        y_rd = y_lu + h
+        inside = {"lu": (x_lu, y_lu), "rd": (x_rd, y_rd)}
         data.update({"scores": inside})
 
-        h_lu = jump + pading * 3
-        h_rd = h_lu + 180
-        inside = {"lu": (w_lu, h_lu), "rd": (w_rd, h_rd)}
+        y_lu = jump + pading * 3
+        y_rd = y_lu + h
+        inside = {"lu": (x_lu, y_lu), "rd": (x_rd, y_rd)}
         data.update({"instructions": inside})
 
-        h_lu = jump + pading * 4
-        h_rd = h_lu + 110
-        inside = {"lu": (w_lu, h_lu), "rd": (w_rd, h_rd)}
+        y_lu = jump + pading * 4
+        y_rd = y_lu + h
+        inside = {"lu": (x_lu, y_lu), "rd": (x_rd, y_rd)}
         data.update({"confirm_quit": inside})
 
         return data
@@ -157,7 +157,7 @@ class InputEngine(SDLCoreEngine):
             case s2.SDLK_BACKSPACE:
                 self.d.text = self.d.text[:-1]
             case s2.SDLK_RETURN:
-                if len(self.d.text) <= 10:
+                if self.d.text and len(self.d.text) <= 10 and self.d.text.isalnum():
                     self.engine.highscore_manager.scores.append({"name": self.d.text, "score": self.engine.score}) # TODO DATA NOTE SAVED ONLY FOR TEST
                     # TODO write this name and score somewhere
                     return "menu"

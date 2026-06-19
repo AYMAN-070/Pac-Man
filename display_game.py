@@ -137,7 +137,6 @@ class DisplayGame(BaseDisplay):
         s2.SDL_RenderClear(self.renderer)
         level = self.engine.current_level
         self.engine.update(self.delta_time)
-
         player_distx_0 = (self.cell * self.player.xf + self.cell / 2)
         player_disty_0 = (self.cell * self.player.yf + self.cell / 2)
 

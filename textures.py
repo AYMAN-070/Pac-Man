@@ -21,6 +21,9 @@ TEXTURES_PATH = [
         "pacgum.png",
         "megapacgum.png",
 
+        "background.png",
+        "background_item.png",
+
         "level.png",
         "score.png",
         "lives.png",
