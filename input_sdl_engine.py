@@ -94,9 +94,11 @@ class SDLCoreEngine(InitInputEngine):
                     key_event = lambda *args: None
                     display = self.d.display_confirm_quit
                 case "end":
-                    mouse_event = lambda *args: None
-                    key_event = lambda *args: None
-                    display = lambda *args: None
+                    self.d.text = ""
+                    self.text_mode = True
+                    mouse_event = self.end_mouse
+                    key_event = self.end_keys
+                    display = self.d.display_end
 
     def core_while(
                 self,
@@ -110,6 +112,7 @@ class SDLCoreEngine(InitInputEngine):
         text = ""
 
         fps_limit = self.fps_limit
+        text_mode = self.text_mode
         while game:
             start_frame = s2.SDL_GetTicks()
 
@@ -139,8 +142,8 @@ class SDLCoreEngine(InitInputEngine):
                         if res:
                             return res
                     case s2.SDL_TEXTINPUT:
-                        text += event.text.text.decode()
-                print(text)
+                        if text_mode:
+                            self.d.text += event.text.text.decode()
 
             res = display()
             if res:

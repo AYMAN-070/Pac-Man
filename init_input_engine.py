@@ -40,6 +40,7 @@ class InitInputEngine:
         self.engine = GameEngine(path)
         self.player = self.engine.player
         self.previous = ""
+        self.text_mode = False
 
         if s2_ttf.TTF_Init() != 0:
             raise InputError("Error. Can't init SDL_TTF")

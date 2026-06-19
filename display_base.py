@@ -44,6 +44,7 @@ class BaseDisplay:
         self.cell = 0
         self.printed = False
         self.pov_rpg = False
+        self.text = ""
 
 
         self.ghost_color = {
@@ -81,6 +82,7 @@ class BaseDisplay:
         self.maze = self.engine.maze.grid
         self.player = self.engine.player
         self.ghosts = self.engine.ghosts
+        self.rotasprit = 3
         self.rotadeath = -0.1
         self.end = False
         for ghost in self.ghosts:

@@ -9,8 +9,8 @@ try:
     import sdl2.sdlttf as s2_ttf
     import mazegenerator
 except ImportError as e:
-    print(f"Error : missing library ({e.name}).")
-    print("Solution : lunch 'make run'.")
+    print(f"Error : missing library ({e.name}).", file=sys.stderr)
+    print("Solution : lunch 'make run'.", file=sys.stderr)
     sys.exit(1)
 from engine import GameEngine
 from textures import Textures
@@ -18,6 +18,7 @@ from display import Display
 from player import Direction
 from init_input_engine import InitInputEngine
 from input_sdl_engine import SDLCoreEngine
+
 
 class InputEngine(SDLCoreEngine):
 
@@ -36,7 +37,6 @@ class InputEngine(SDLCoreEngine):
             case s2.SDLK_ESCAPE:
                 return "escape"
         return ""
-
 
     def menu_mouse(self, event) -> str:
         """  """ #  TODO
@@ -82,7 +82,6 @@ class InputEngine(SDLCoreEngine):
         data.update({"confirm_quit": inside})
 
         return data
-
 
     def check_button(self, x: int, y: int) -> str:
         button = self.get_menu_buttons()
@@ -147,4 +146,19 @@ class InputEngine(SDLCoreEngine):
                             return "exit"
                         else:
                             return "menu"
+        return ""
+
+    def end_mouse(self, event: Any) -> str:
+        return ""
+
+    def end_keys(self, event: Any) -> str:
+
+        match event.key.keysym.sym:
+            case s2.SDLK_BACKSPACE:
+                self.d.text = self.d.text[:-1]
+            case s2.SDLK_RETURN:
+                if len(self.d.text) <= 10:
+                    self.engine.highscore_manager.scores.append({"name": self.d.text, "score": self.engine.score}) # TODO DATA NOTE SAVED ONLY FOR TEST
+                    # TODO write this name and score somewhere
+                    return "menu"
         return ""

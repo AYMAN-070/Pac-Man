@@ -44,7 +44,6 @@ TEXTURES_PATH = [
 class Textures:
     """  """  # TODO
 
-
     def __init__(self, renderer: Any) -> None:
         """  """  # TODO
         self.all = dict()

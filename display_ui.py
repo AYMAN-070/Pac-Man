@@ -162,3 +162,56 @@ class DisplayUI(BaseDisplay):
         s2.SDL_RenderPresent(self.renderer)
         self.printed = True
 
+    def get_str_sizes(self, data: str) -> tuple[float, float]:
+
+        s_data = f"{data}"
+        if data:
+            c_min_size = self.midxy[0] * 2 / len(s_data)
+        c_size = 50
+        w = len(s_data) * c_size
+        if data and w > self.midxy[0] * 2:
+            c_size = c_min_size
+            w = len(s_data) * c_size
+        return (int(w), int(c_size))
+
+
+    def display_end(self) -> None:
+
+        s2.SDL_RenderClear(self.renderer)
+       
+        w = 330
+        h = 140
+        dst = s2.SDL_Rect(int(self.midxy[0] - w / 2), 5, w, h)
+        s2.SDL_RenderCopy(self.renderer, self.t["score"], None, dst)
+
+        s_score = f"{self.engine.score}"
+        w, c_size = self.get_str_sizes(s_score)
+        y = h + 20
+
+        self.draw_text(s_score, int(self.midxy[0] - w / 2), y, w, c_size * 2, self.font1, "orange")
+
+        y = y + c_size * 2 + 100
+        msg = "ENTER YOUR NAME:"
+        w, c_size = self.get_str_sizes(msg)
+        self.draw_text(msg, int(self.midxy[0] - w / 2), y, w, c_size * 2, self.font2, "yellow")
+
+        #frame = self.delta_time * 1000
+        if self.rotasprit == 120:
+            self.rotasprit = 0
+        self.rotasprit += 1
+
+        txt = self.text
+        if len(txt) >= 19:
+            self.text = self.text[:19]
+        w, c_size = self.get_str_sizes(txt)
+        y = y + c_size * 2 + 30
+        if txt:
+            self.draw_text(txt, int(self.midxy[0] - w / 2), y, w, c_size * 2, self.font1, "white")
+        if self.rotasprit < 60:
+            self.draw_text('_', int(self.midxy[0] - w / 2) + w, y, c_size, c_size * 2, self.font1, "yellow")
+        if len(txt) > 10:
+            msg = "PLAYER NAME CAN'T EXEED 10 CHARACTERS"
+            w = len(msg) * 30
+            self.draw_text(msg, int(self.midxy[0] - w / 2), y + 200, w, 40, self.font2, "red")
+
+        s2.SDL_RenderPresent(self.renderer)
