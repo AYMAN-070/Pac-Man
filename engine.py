@@ -162,7 +162,7 @@ class GameEngine:
             for x in range(width):
                 if not self.maze.is_wall(x, y):
                     empty_cells += 1
-        self.time_left = float(empty_cells)
+        self.time_left = float(empty_cells / 2.5)
 
     def _move_player(self) -> None:
         """

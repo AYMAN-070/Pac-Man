@@ -44,12 +44,18 @@ class Maze:
             generator.generate(seed=current_seed)
             raw_maze = generator.maze
             self._parse_external_maze(raw_maze)
+            self._get_reachable_cells(self.width // 2, self.height // 2,
+                                      self.width, self.height)
+            self._ensure_corners_accessible()
             self._place_items()
             print("Maze generated successfully using external package")
         except Exception as e:
             print(f"Warning: External maze generator failed ({e}), "
                   f"creat fallback maze")
             self._create_dummy_grid()
+            self._get_reachable_cells(self.width // 2, self.height // 2,
+                                      self.width, self.height)
+            self._ensure_corners_accessible()
             self._place_items()
 
     def _parse_external_maze(self, raw_maze: Any) -> None:
@@ -131,7 +137,54 @@ class Maze:
                     self.grid[y][x] = 1
                 elif x % 2 == 0 and y % 2 == 0:
                     self.grid[y][x] = 1
-        self._carve_center()
+        self.carve_center()
+
+    def _get_reachable_cells(self, start_x: int, start_y: int,
+                             width: int, height: int) -> set:
+        """
+        find all reachable cases from the begining """
+        self.reachable = set()
+        queue = [(start_x, start_y)]
+        self.reachable.add((start_x, start_y))
+        while len(queue) > 0:
+            cx, cy = queue.pop(0)
+            for dx, dy in [(0, -1), (0, 1), (-1, 0), (1, 0)]:
+                nx, ny = cx + dx, cy + dy
+                if 0 <= nx < width and 0 <= ny < height:
+                    if (not self.is_wall(nx, ny) and (nx, ny)
+                            not in self.reachable):
+                        self.reachable.add((nx, ny))
+                        queue.append((nx, ny))
+
+    def _ensure_corners_accessible(self) -> None:
+        """
+        Checks if the 4 corners are accessible. If a corner is blocked,
+        """
+        corners = [
+            (1, 1),                                        # Top-Left
+            (self.width - 2, 1),                           # Top-Right
+            (1, self.height - 2),                          # Bottom-Left
+            (self.width - 2, self.height - 2)              # Bottom-Right
+        ]
+        center_x, center_y = self.width // 2, self.height // 2
+        for cx, cy in corners:
+            # If the corner is already connected to Pac-Man, we skip
+            if (cx, cy) in self.reachable:
+                continue
+            # If we reach here, the corner is isolated
+            current_x, current_y = cx, cy
+            while (current_x, current_y) not in self.reachable:
+                self.grid[current_y][current_x] = 0
+                self.reachable.add((current_x, current_y))
+                #  Move one step towards the center of the maze
+                if current_x < center_x:
+                    current_x += 1
+                elif current_x > center_x:
+                    current_x -= 1
+                elif current_y < center_y:
+                    current_y += 1
+                elif current_y > center_y:
+                    current_y -= 1
 
     def _place_items(self) -> None:
         """
@@ -145,7 +198,7 @@ class Maze:
         # Pacgums in most corridors
         for y in range(1, self.height - 1):
             for x in range(1, self.width - 1):
-                if self.grid[y][x] == 0:
+                if self.grid[y][x] == 0 and (x, y) in self.reachable:
                     self.grid[y][x] = 2
         self.grid[self.height // 2][self.width // 2] = 0
 
