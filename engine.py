@@ -13,7 +13,7 @@ import random
 
 def update_pos(entity: Ghost | Player, pos: str, goal: float,
                speed: float) -> float:
-    """ decrease position value""" 
+    """ decrease position value"""
     rest = 0
 
     if pos == "x":
@@ -194,7 +194,12 @@ class GameEngine:
     def cheat_next_level(self) -> None:
         """pass to next level"""
         self.current_level += 1
-        self.load_level()
+        if self.current_level > 10:
+            self.is_victory = True
+            print("CHEAT : You won the game!")
+        else:
+            self.load_level()
+            print(f"CHEAT : Passage au niveau {self.current_level} !")
 
     def _check_collisions(self) -> None:
         """

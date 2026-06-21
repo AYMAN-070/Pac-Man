@@ -3,6 +3,7 @@ import sys
 import ctypes
 from enum import IntEnum
 from typing import Callable, Any
+import random
 try:
     import sdl2 as s2
     import sdl2.ext.image as s2_img
@@ -14,7 +15,6 @@ except ImportError as e:
     sys.exit(1)
 from engine import GameEngine
 from textures import Textures
-from display import Display
 from player import Direction
 from init_input_engine import InitInputEngine
 
@@ -49,8 +49,8 @@ class SDLCoreEngine(InitInputEngine):
         mouse_event = self.menu_mouse
         key_event = lambda *args: None
         display = self.d.display_menu
+        self.s.set_background_sound("menu_sound")
         while game:
-            self.d.printed = False
             if res != "confirm_quit":
                 self.previous = res
             res = self.core_while(
@@ -65,10 +65,16 @@ class SDLCoreEngine(InitInputEngine):
                 case "exit":
                     return
                 case "menu":
+                    self.s.set_background_sound("menu_sound")
+                    print(self.previous, "prev")
+                    if self.previous not in {"instructions", "scores", "menu"}:
+                        self.d.rotasprit = 1
+                        self.d.rotadeath = -0.1
                     mouse_event = self.menu_mouse
                     key_event = lambda *args: None
                     display = self.d.display_menu
                 case "newgame":
+                    self.s.set_background_sound("game_sound")
                     mouse_event = lambda *args: None
                     key_event = self.newgame_keys
                     display = self.d.display_and_compute_game
@@ -77,7 +83,9 @@ class SDLCoreEngine(InitInputEngine):
                         self.player = self.engine.player
                         self.d.engine = self.engine
                         self.d.init_engine()
+                        self.set_cell_size(self.midxy[0] * 2, self.midxy[1] * 2)
                 case "escape":
+                    self.s.halt_background_sound()
                     mouse_event = self.escape_mouse
                     key_event = lambda *args: None
                     display = self.d.display_escape
@@ -86,6 +94,7 @@ class SDLCoreEngine(InitInputEngine):
                     key_event = lambda *args: None
                     display = self.d.display_instructions
                 case "scores":
+                    self.d.seed = random.randint(0, 10000)
                     mouse_event = self.instructions_mouse
                     key_event = lambda *args: None
                     display = self.d.display_scores
@@ -94,6 +103,7 @@ class SDLCoreEngine(InitInputEngine):
                     key_event = lambda *args: None
                     display = self.d.display_confirm_quit
                 case "end":
+                    self.d.i = 0
                     self.d.text = ""
                     self.text_mode = True
                     mouse_event = self.end_mouse
@@ -127,11 +137,7 @@ class SDLCoreEngine(InitInputEngine):
                             h = event.window.data2
                             self.midxy[0] = int(w / 2)
                             self.midxy[1] = int(h / 2)
-                            if w < h:
-                                self.d.cell = int((w - 250) / len(self.d.maze))
-                            else:
-                                self.d.cell = int((h - 250) / len(self.d.maze))
-                            self.d.printed = False
+                            self.set_cell_size(w, h)
 
                     case s2.SDL_MOUSEBUTTONUP:
                         res = mousebuttonup(event)
@@ -142,11 +148,18 @@ class SDLCoreEngine(InitInputEngine):
                         if res:
                             return res
                     case s2.SDL_TEXTINPUT:
-                        if text_mode:
-                            self.d.text += event.text.text.decode()
+                        self.d.text += event.text.text.decode()
+                        if self.d.text[-1] == '/':
+                            self.cheat_codes()
 
             res = display()
             if res:
                 return res
             limit_fps(start_frame, fps_limit)
+
+    def cheat_codes(self) -> None:
+        commands = self.d.text.split('/')
+        if commands[-2] == "cheat":
+            self.engine.toggle_invincibility()
+
 

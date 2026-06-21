@@ -14,15 +14,41 @@ from display_base import BaseDisplay
 
 class DisplayUI(BaseDisplay):
 
+    def draw_background(self) -> None:
+
+        if self.midxy[0] < self.midxy[1]:
+            backh = int((self.midxy[1] + 1) * 2)
+            backw = int((backh + 5) / 1080 * 1920)
+        else:
+            backw = int((self.midxy[0] + 1) * 2)
+            backh = int((backw + 5) / 1920 * 1080)
+        dst = s2.SDL_Rect(0, 0, backw, backh)
+        s2.SDL_RenderCopy(self.renderer, self.t['background'], None, dst)
+    
+        backw = int(self.midxy[1] * 1.5)
+        backh = int(backw / 1080 * 1179)
+        dst = s2.SDL_Rect(int(self.midxy[0] * 1.5 - backw / 2), int(self.midxy[1] - backh / 2), backw, backh)
+
+        rotasprit = (self.rotasprit **2) * 2 -1
+        s2.SDL_RenderCopyEx(self.renderer, self.t['background_item'], None, dst, rotasprit * 11 * -1, None, s2.SDL_FLIP_NONE)
+        self.rotasprit += self.rotadeath / 60
+        if self.rotasprit >= 1:
+            self.rotadeath = -0.1
+        if self.rotasprit <= 0:
+            self.rotadeath = 0.1
+
+
     def display_menu(self) -> None:
         """  """ #  TODO
         s2.SDL_RenderClear(self.renderer)
 
-        jump = 300
-        pading = 200
-        w = 400
-        h = 200
+        jump = 350
+        w = int(self.midxy[1] / 2)
+        h = int(self.midxy[1] / 4)
+        pading = int(w / 2)
         pos_w = int(self.midxy[0] -  (w/ 2))
+
+        self.draw_background()
 
         dst = s2.SDL_Rect(int(self.midxy[0] -  (800 / 2)), -50, 800, 500)
         s2.SDL_RenderCopy(self.renderer, self.t['menu_title'], None, dst)
@@ -50,8 +76,6 @@ class DisplayUI(BaseDisplay):
 
     def display_escape(self) -> None:
         
-        if self.printed:
-            return
         s2.SDL_RenderClear(self.renderer)
         s2.SDL_SetTextureColorMod(self.t['sprit_ghost1'], 65, 50, 80)
         s2.SDL_SetTextureColorMod(self.t['return_menu'], 140, 120, 180)
@@ -76,13 +100,10 @@ class DisplayUI(BaseDisplay):
         s2.SDL_SetTextureColorMod(self.t['return_menu'], 255, 255, 255)
         s2.SDL_RenderPresent(self.renderer)
 
-        self.printed = True
-
     def display_instructions(self) -> None:
 
-        if self.printed:
-            return
         s2.SDL_RenderClear(self.renderer)
+        self.draw_background()
 
         scalex = int(self.midxy[0] / 10)
         scaley = int(self.midxy[1] / 10)
@@ -100,13 +121,11 @@ class DisplayUI(BaseDisplay):
         s2.SDL_RenderCopy(self.renderer, self.t["instructions"], None, dst)
 
         s2.SDL_RenderPresent(self.renderer)
-        self.printed = True
 
     def display_scores(self) -> None:
 
-        if self.printed:
-            return
         s2.SDL_RenderClear(self.renderer)
+        self.draw_background()
 
         scalex = int(self.midxy[0] / 10)
         scaley = int(self.midxy[1] / 10)
@@ -122,6 +141,7 @@ class DisplayUI(BaseDisplay):
         s2.SDL_RenderCopy(self.renderer, self.t['scores'], None, dst)
 
         i = 0
+        random.seed(self.seed)
         for elem in self.engine.highscore_manager.scores:
             
             s_name = f"{elem['name'].upper()} :"
@@ -133,6 +153,8 @@ class DisplayUI(BaseDisplay):
             x = int(self.midxy[0] - (w + ws) / 2)
             y = int(self.midxy[1] / 2 + jump * jumps * scale)
             h = int(100 * scale)
+            dst = s2.SDL_Rect(x, y, w, int(h * 1.05))
+            s2.SDL_RenderFillRect(self.renderer, dst)
             self.draw_text(s_name, x, y, w, h, self.font2, random.choice(self.colors))
             if i == 0:
                 size = int(100 * scale)
@@ -140,6 +162,8 @@ class DisplayUI(BaseDisplay):
                 s2.SDL_RenderCopy(self.renderer, self.t['crown'], None, dst)
 
             h = int(80 * scale)
+            dst = s2.SDL_Rect(int(x + w + 50), y, ws, int(h * 1.05))
+            s2.SDL_RenderFillRect(self.renderer, dst)
             self.draw_text(s_score,int(x + w + 50), y, ws, h, self.font1, random.choice(self.colors))
             jumps += 1
             i += 1
@@ -148,19 +172,15 @@ class DisplayUI(BaseDisplay):
             self.draw_text(msg, int(self.midxy[0] - len(msg) * 40 / 2), self.midxy[1] - 40, len(msg) * 40, 40, self.font1, "black")
 
         s2.SDL_RenderPresent(self.renderer)
-        self.printed = True
 
     def display_confirm_quit(self) -> None:
 
-        if self.printed:
-            return
         s2.SDL_RenderClear(self.renderer)
 
         dst = s2.SDL_Rect(int(self.midxy[0] - 400), self.midxy[1] - 200, 800, 400)
         s2.SDL_RenderCopy(self.renderer, self.t['areyousure'], None, dst)
 
         s2.SDL_RenderPresent(self.renderer)
-        self.printed = True
 
     def get_str_sizes(self, data: str) -> tuple[float, float]:
 
@@ -183,12 +203,23 @@ class DisplayUI(BaseDisplay):
         h = 140
         dst = s2.SDL_Rect(int(self.midxy[0] - w / 2), 5, w, h)
         s2.SDL_RenderCopy(self.renderer, self.t["score"], None, dst)
-
-        s_score = f"{self.engine.score}"
+        
+        if self.i > self.engine.score:
+            self.i = self.engine.score
+        s_score = f"{self.i}"
         w, c_size = self.get_str_sizes(s_score)
         y = h + 20
-
         self.draw_text(s_score, int(self.midxy[0] - w / 2), y, w, c_size * 2, self.font1, "orange")
+
+        if self.i != self.engine.score:
+            if self.engine.score > 1500:
+                self.i += 100
+            elif self.engine.score > 100:
+                self.i += 10
+            else:
+                self.i += 1
+            s2.SDL_RenderPresent(self.renderer)
+            return
 
         y = y + c_size * 2 + 100
         msg = "ENTER YOUR NAME:"
@@ -203,15 +234,19 @@ class DisplayUI(BaseDisplay):
         txt = self.text
         if len(txt) >= 19:
             self.text = self.text[:19]
+            txt = self.text
         w, c_size = self.get_str_sizes(txt)
         y = y + c_size * 2 + 30
         if txt:
-            self.draw_text(txt, int(self.midxy[0] - w / 2), y, w, c_size * 2, self.font1, "white")
+            self.draw_text(txt, int(self.midxy[0] - w / 2), y, w, c_size * 3, self.font3, "white")
         if self.rotasprit < 60:
-            self.draw_text('_', int(self.midxy[0] - w / 2) + w, y, c_size, c_size * 2, self.font1, "yellow")
+            self.draw_text('_', int(self.midxy[0] - w / 2) + w, y, c_size, c_size * 3, self.font1, "yellow")
         if len(txt) > 10:
             msg = "PLAYER NAME CAN'T EXEED 10 CHARACTERS"
             w = len(msg) * 30
             self.draw_text(msg, int(self.midxy[0] - w / 2), y + 200, w, 40, self.font2, "red")
-
+        elif txt and not txt.isalnum():
+            msg = "ONLY ALPHANUMERIC CHARACTERS ARE ALLOWED"
+            w = len(msg) * 30
+            self.draw_text(msg, int(self.midxy[0] - w / 2), y + 200, w, 40, self.font2, "red")
         s2.SDL_RenderPresent(self.renderer)

@@ -1,7 +1,7 @@
 
+import sdl2 as s2
 import sdl2.ext.image as s2_img
 import sdl2.sdlttf as s2_ttf
-import sdl2 as s2
 import ctypes
 from typing import Any
 import time
@@ -10,24 +10,27 @@ import random
 from engine import GameEngine
 from ghost import GhostState
 from player import Direction
+from sounds import Sounds
 
 
 class DiplayError(Exception):
     """  """ # TODO
     pass
 
-
 class BaseDisplay:
     """  """ # TODO
 
     def __init__(self, engine: GameEngine, fps_limit: int,
-                 renderer: Any, textures: dict[str, Any],
-                 font1: Any, font2: Any, midxy: list[int]) -> None:
+                 renderer: Any, sounds: Sounds, textures: dict[str, Any],
+                 font1: Any, font2: Any, font3: Any, midxy: list[int]) -> None:
         """  """ # TODO
         self.engine = engine
+        self.s = sounds
+        self.sounds = sounds.sounds
+        self.eat_sounds = ["eat_sound1", "eat_sound2", "eat_sound3"]
         self.init_engine()
 
-        self.rotasprit = 3
+        self.rotasprit = 1
         self.rotadeath = -0.1
         self.n_rotasprit = 4
         self.sprits_rate = 0
@@ -40,11 +43,14 @@ class BaseDisplay:
         self.t = textures
         self.font1 = font1
         self.font2 = font2
+        self.font3 = font3
         self.midxy = midxy
         self.cell = 0
-        self.printed = False
         self.pov_rpg = False
         self.text = ""
+        self.score_trace = 0
+        self.i = 0
+        self.seed = 0
 
 
         self.ghost_color = {
@@ -78,11 +84,12 @@ class BaseDisplay:
 
     def init_engine(self):
         """  """ #  TODO
-        
         self.maze = self.engine.maze.grid
         self.player = self.engine.player
         self.ghosts = self.engine.ghosts
-        self.rotasprit = 3
+        self.score_trace = 0
+        self.sprits_rate = 0
+        self.rotasprit = 1
         self.rotadeath = -0.1
         self.end = False
         for ghost in self.ghosts:
@@ -100,4 +107,3 @@ class BaseDisplay:
         dst = s2.SDL_Rect(x, y, w, h)        
         s2.SDL_RenderCopy(self.renderer, texture, None, dst)
         s2.SDL_DestroyTexture(texture)
-
