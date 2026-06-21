@@ -1,0 +1,1 @@
+![Project Workflow and Task Distribution](workflow_diagram.png)
