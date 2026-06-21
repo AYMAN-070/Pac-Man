@@ -40,7 +40,6 @@ class Sounds:
 
     def set_background_sound(self, name: str, loop: int = -1) -> None:
         if not self.is_active:
-            print("kek iii")
             self.channel = s2_mix.Mix_PlayChannel(-1, self.sounds[name], loop)
             self.active = name
             self.is_active = True

@@ -177,16 +177,17 @@ class DisplayGame(BaseDisplay):
         """  """ #  TODO
 
         s2.SDL_RenderClear(self.renderer)
+
         if self.score_trace != self.engine.score:
-            channel = s2_mix.Mix_PlayChannel(-1, self.sounds[random.choice(self.eat_sounds)], 0)
-            if channel == -1:
-                print("cant play sound, verifie a audio device is available", file=sys.stderr)
+            s2_mix.Mix_PlayChannel(-1, self.sounds[random.choice(self.eat_sounds)], 0)
         self.score_trace = self.engine.score
         
         lives = self.player.lives
         level = self.engine.current_level
         if self.player.next_direction != Direction.NONE:
             self.engine.update(self.delta_time)
+            if level != self.engine.current_level:
+                self.init_engine()
         if self.player.lives != lives:
             channel = s2_mix.Mix_PlayChannel(-1, self.sounds["left_life_sound"], 0)
         player_distx_0 = (self.cell * self.player.xf + self.cell / 2)
@@ -235,7 +236,6 @@ class DisplayGame(BaseDisplay):
         self.rotate_all_sprits()
         s2.SDL_RenderPresent(self.renderer)
         
-        if level != self.engine.current_level:
-            self.init_engine()
+
 
 

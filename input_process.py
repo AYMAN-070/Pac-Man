@@ -22,6 +22,17 @@ from input_sdl_engine import SDLCoreEngine
 
 class InputEngine(SDLCoreEngine):
 
+    def cheat_codes(self) -> str:
+        match self.d.text:
+            case "/cheat":
+                self.text_mode = False
+                self.engine.toggle_invincibility()
+            case "/next":
+                self.text_mode = False
+                self.engine.cheat_next_level()
+                return "reload"
+        return ""
+
     def newgame_keys(self, event) -> str:
         """  """ #  TODO
 
@@ -36,6 +47,14 @@ class InputEngine(SDLCoreEngine):
                 self.player.next_direction = Direction.LEFT
             case s2.SDLK_ESCAPE:
                 return "escape"
+            case s2.SDLK_SLASH:
+                self.text_mode = True
+                self.d.text = ""
+            case s2.SDLK_RETURN:
+                res = self.cheat_codes()
+                if res:
+                    return res
+
         return ""
 
     def menu_mouse(self, event) -> str:

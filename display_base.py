@@ -28,7 +28,9 @@ class BaseDisplay:
         self.s = sounds
         self.sounds = sounds.sounds
         self.eat_sounds = ["eat_sound1", "eat_sound2", "eat_sound3"]
-        self.init_engine()
+        self.renderer = renderer
+        self.t = textures
+        self.init_engine(self.engine.current_level)
 
         self.rotasprit = 1
         self.rotadeath = -0.1
@@ -39,8 +41,6 @@ class BaseDisplay:
     
         self.p_direction = ""
         self.delta_time = fps_limit / 1000
-        self.renderer = renderer
-        self.t = textures
         self.font1 = font1
         self.font2 = font2
         self.font3 = font3
@@ -51,6 +51,7 @@ class BaseDisplay:
         self.score_trace = 0
         self.i = 0
         self.seed = 0
+        self.level = 0
 
 
         self.ghost_color = {
@@ -82,7 +83,7 @@ class BaseDisplay:
                         "purple",
         ]
 
-    def init_engine(self):
+    def init_engine(self, level: int):
         """  """ #  TODO
         self.maze = self.engine.maze.grid
         self.player = self.engine.player
@@ -92,6 +93,7 @@ class BaseDisplay:
         self.rotasprit = 1
         self.rotadeath = -0.1
         self.end = False
+        self.level = level
         for ghost in self.ghosts:
             ghost.rotasprit = random.randint(0, 4)
 
