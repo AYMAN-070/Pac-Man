@@ -1,5 +1,6 @@
 import json
 import os
+import sys
 from typing import List, Dict, Any
 
 
@@ -19,11 +20,18 @@ class HighscoreManager:
             with open(self.filepath, 'r', encoding='utf-8') as file:
                 data = json.load(file)
                 if isinstance(data, list):
-                    self.scores = data
+                    valid_scores = []
+                    for entry in data:
+                        if (isinstance(entry, dict) and 
+                                isinstance(entry.get("name"), str) and
+                                isinstance(entry.get("score"), int)):
+                            valid_scores.append(entry)
+                    self.scores = valid_scores
                 else:
                     self.scores = []
         except (json.JSONDecodeError, IOError):
-            print("Warning: can't read highscores file. Creating new one...")
+            print("[WARNING] Can't read highscores file or corrupted format. "
+                  "Creating new one...", file=sys.stderr)
             self.scores = []
 
     def save_scores(self) -> None:
@@ -33,8 +41,7 @@ class HighscoreManager:
             with open(self.filepath, 'w', encoding='utf-8') as file:
                 json.dump(self.scores, file, indent=4)
         except IOError as e:
-            print(f"Error while saving scores : {e}")
-
+            print(f"[ERROR] Error while saving scores : {e}", file=sys.stderr)
     def clean_player_name(self, name: str) -> str:
         """Clean and return valid name"""
         if not name:
@@ -44,6 +51,8 @@ class HighscoreManager:
 
     def add_score(self, player_name: str, score: int) -> None:
         """add score and save just Top 10"""
+        if not isinstance(score, int):
+            return
         if score < 0:
             score = 0
         player_name = self.clean_player_name(player_name)

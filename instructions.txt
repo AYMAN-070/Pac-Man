@@ -3,7 +3,6 @@ PAC-MAN - 42 PROJECT
 
 CONTROLS:
 - Use Arrow Keys to move Pac-Man.
-- Press SPACE to Pause or Resume the game.
 - Press N to cheat and advance to the next level.
 - Press ESC to quit.
 

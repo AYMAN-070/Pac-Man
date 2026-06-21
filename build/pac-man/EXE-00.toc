@@ -50,7 +50,7 @@
  [],
  False,
  False,
- 1782066131,
+ 1782076328,
  [('run',
    '/home/ayman/PacMan/Pac-Man/.venv/lib/python3.13/site-packages/PyInstaller/bootloader/Linux-64bit-intel/run',
    'EXECUTABLE')],

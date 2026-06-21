@@ -49,8 +49,39 @@ class GameConfig:
             for key, value in user_settings.items():
                 if key in self.settings:
                     self.settings[key] = value
-                else:
-                    pass
+            if not isinstance(self.settings.get('lives'), int):
+                self.settings['lives'] = 3
+                print("[WARNING] 'lives' must be an integer."
+                      "Defaulting to 3.", file=sys.stderr)
+            elif self.settings['lives'] < 1:
+                self.settings['lives'] = 1
+                print("[WARNING] 'lives' cannot be < 1."
+                      "Forcing to 1.", file=sys.stderr)
+            elif self.settings['lives'] > 3:
+                self.settings['lives'] = 3
+                print("[WARNING] 'lives' capped at 3 "
+                      "to preserve UI stability.", file=sys.stderr)
+            if 'level' in self.settings and isinstance(self.settings['level'],
+                                                       list):
+                for i, lvl in enumerate(self.settings['level']):
+                    # Sécurité pour Width
+                    if not isinstance(lvl.get('width'), int):
+                        lvl['width'] = 25
+                        print(f"[WARNING] Level {i} width is not an integer. "
+                              f"Defaulting to 25.", file=sys.stderr)
+                    elif lvl['width'] < 10:
+                        lvl['width'] = 10
+                    elif lvl['width'] > 50:
+                        lvl['width'] = 50
+                    # Sécurité pour Height
+                    if not isinstance(lvl.get('height'), int):
+                        lvl['height'] = 25
+                        print(f"[WARNING] Level {i} height is not an integer. "
+                              f"Defaulting to 25.", file=sys.stderr)
+                    elif lvl['height'] < 10:
+                        lvl['height'] = 10
+                    elif lvl['height'] > 50:
+                        lvl['height'] = 50
             print(f"Configuration successfully loaded from {self.filepath}")
         except FileNotFoundError:
             print(f"Warning: The file '{self.filepath}' could not be found. "

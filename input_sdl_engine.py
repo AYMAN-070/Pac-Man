@@ -61,28 +61,31 @@ class SDLCoreEngine(InitInputEngine):
             if res == "confirm_quit":
                 if self.previous not in {"menu", "escape"}:
                     res = "menu"
+
+            self.text_mode = False
+            self.d.text = ""
             match res:
                 case "exit":
                     return
                 case "menu":
                     self.s.set_background_sound("menu_sound")
-                    print(self.previous, "prev")
                     if self.previous not in {"instructions", "scores", "menu"}:
                         self.d.rotasprit = 1
                         self.d.rotadeath = -0.1
                     mouse_event = self.menu_mouse
                     key_event = lambda *args: None
                     display = self.d.display_menu
-                case "newgame":
+                case "newgame" | "reload":
                     self.s.set_background_sound("game_sound")
                     mouse_event = lambda *args: None
                     key_event = self.newgame_keys
                     display = self.d.display_and_compute_game
                     if self.previous != "escape":
-                        self.engine = GameEngine(self.config_path)
+                        if res != "reload":
+                            self.engine = GameEngine(self.config_path)
                         self.player = self.engine.player
                         self.d.engine = self.engine
-                        self.d.init_engine()
+                        self.d.init_engine(self.engine.current_level)
                         self.set_cell_size(self.midxy[0] * 2, self.midxy[1] * 2)
                 case "escape":
                     self.s.halt_background_sound()
@@ -122,7 +125,6 @@ class SDLCoreEngine(InitInputEngine):
         text = ""
 
         fps_limit = self.fps_limit
-        text_mode = self.text_mode
         while game:
             start_frame = s2.SDL_GetTicks()
 
@@ -148,18 +150,16 @@ class SDLCoreEngine(InitInputEngine):
                         if res:
                             return res
                     case s2.SDL_TEXTINPUT:
-                        self.d.text += event.text.text.decode()
-                        if self.d.text[-1] == '/':
-                            self.cheat_codes()
+                        if self.text_mode:
+                            self.d.text += event.text.text.decode()
+                            if len(self.d.text) > 25:
+                                self.d.text = ""
+                                self.text_mode = False
 
             res = display()
             if res:
                 return res
             limit_fps(start_frame, fps_limit)
 
-    def cheat_codes(self) -> None:
-        commands = self.d.text.split('/')
-        if commands[-2] == "cheat":
-            self.engine.toggle_invincibility()
 
 
