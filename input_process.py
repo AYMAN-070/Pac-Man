@@ -158,7 +158,6 @@ class InputEngine(SDLCoreEngine):
                 self.d.text = self.d.text[:-1]
             case s2.SDLK_RETURN:
                 if self.d.text and len(self.d.text) <= 10 and self.d.text.isalnum():
-                    self.engine.highscore_manager.scores.append({"name": self.d.text, "score": self.engine.score}) # TODO DATA NOTE SAVED ONLY FOR TEST
-                    # TODO write this name and score somewhere
+                    self.engine.highscore_manager.add_score(self.d.text, self.engine.score)
                     return "menu"
         return ""

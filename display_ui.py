@@ -76,8 +76,6 @@ class DisplayUI(BaseDisplay):
 
     def display_escape(self) -> None:
         
-        if self.printed:
-            return
         s2.SDL_RenderClear(self.renderer)
         s2.SDL_SetTextureColorMod(self.t['sprit_ghost1'], 65, 50, 80)
         s2.SDL_SetTextureColorMod(self.t['return_menu'], 140, 120, 180)
@@ -101,8 +99,6 @@ class DisplayUI(BaseDisplay):
         s2.SDL_SetTextureColorMod(self.t['sprit_ghost1'], 255, 255, 255)
         s2.SDL_SetTextureColorMod(self.t['return_menu'], 255, 255, 255)
         s2.SDL_RenderPresent(self.renderer)
-
-        self.printed = True
 
     def display_instructions(self) -> None:
 
@@ -145,8 +141,6 @@ class DisplayUI(BaseDisplay):
         s2.SDL_RenderCopy(self.renderer, self.t['scores'], None, dst)
 
         i = 0
-        if len(self.engine.highscore_manager.scores) < 10:
-            self.engine.highscore_manager.scores.append({"name": "bob", "score": 333})
         random.seed(self.seed)
         for elem in self.engine.highscore_manager.scores:
             
@@ -181,15 +175,12 @@ class DisplayUI(BaseDisplay):
 
     def display_confirm_quit(self) -> None:
 
-        if self.printed:
-            return
         s2.SDL_RenderClear(self.renderer)
 
         dst = s2.SDL_Rect(int(self.midxy[0] - 400), self.midxy[1] - 200, 800, 400)
         s2.SDL_RenderCopy(self.renderer, self.t['areyousure'], None, dst)
 
         s2.SDL_RenderPresent(self.renderer)
-        self.printed = True
 
     def get_str_sizes(self, data: str) -> tuple[float, float]:
 
@@ -221,7 +212,12 @@ class DisplayUI(BaseDisplay):
         self.draw_text(s_score, int(self.midxy[0] - w / 2), y, w, c_size * 2, self.font1, "orange")
 
         if self.i != self.engine.score:
-            self.i += 10
+            if self.engine.score > 1500:
+                self.i += 100
+            elif self.engine.score > 100:
+                self.i += 10
+            else:
+                self.i += 1
             s2.SDL_RenderPresent(self.renderer)
             return
 
