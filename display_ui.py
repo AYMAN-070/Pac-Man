@@ -229,7 +229,19 @@ class DisplayUI(BaseDisplay):
         self.draw_text(s_score, int(self.midxy[0] - w / 2), y, w, c_size * 2, self.font1, "orange")
 
         if self.i != self.engine.score:
-            if self.engine.score > 1500:
+            if self.engine.score > 1000000000:
+                self.i += 10000000
+            if self.engine.score > 100000000:
+                self.i += 1000000
+            elif self.engine.score > 10000000:
+                self.i += 100000
+            elif self.engine.score > 1000000:
+                self.i += 10000
+            elif self.engine.score > 100000:
+                self.i += 1000
+            elif self.engine.score > 10000:
+                self.i += 500
+            elif self.engine.score > 1500:
                 self.i += 100
             elif self.engine.score > 100:
                 self.i += 10
