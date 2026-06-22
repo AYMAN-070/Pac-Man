@@ -25,7 +25,8 @@ make run
 * **/cheat**: Cheat Mode (Invincibility mode).
 
 ## Configuration
-The game is highly customizable via the `config.json` file. 
+The game is highly customizable via the `config.json` file.
+Default
 * **Robust Parsing**: Our parser safely handles comments starting with `#` (which standard JSON does not support) and automatically applies secure fallback values if keys are missing or invalid.
 * **Dynamic Balancing**: Instead of static global timers, the engine calculates the time limit for each level dynamically based on the walkable area (`time = accessible_cells / 2.5`).
 

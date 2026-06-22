@@ -89,10 +89,11 @@ class InitInputEngine:
             raise
 
         self.window = s2.SDL_CreateWindow(b"Pacman",
-                                     s2.SDL_WINDOWPOS_CENTERED,
-                                     s2.SDL_WINDOWPOS_CENTERED,
-                                     D.w, D.h,
-                                     s2.SDL_WINDOW_SHOWN | s2.SDL_WINDOW_RESIZABLE)
+                                          s2.SDL_WINDOWPOS_CENTERED,
+                                          s2.SDL_WINDOWPOS_CENTERED,
+                                          D.w, D.h,
+                                          s2.SDL_WINDOW_SHOWN
+                                          | s2.SDL_WINDOW_RESIZABLE)
         if not self.window:
             self.close_fonts()
             self.s.free_all_sounds()
@@ -118,7 +119,7 @@ class InitInputEngine:
             s2.SDL_DestroyWindow(self.window)
             self.s.free_all_sounds()
             s2.SDL_Quit()
-            raise In#putError("Error. Can't init renderer")
+            raise InputError("Error. Can't init renderer")
         s2.SDL_SetRenderDrawColor(self.renderer, 62, 98, 124, 255)
 
         try:
@@ -161,4 +162,3 @@ class InitInputEngine:
         s2_ttf.TTF_CloseFont(self.font2)
         s2_ttf.TTF_CloseFont(self.font3)
         s2_ttf.TTF_Quit()
-

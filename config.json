@@ -2,9 +2,9 @@
   # Game parameters
   "highscore_filename": "highscores.json",
   "lives": 3,
-  "points_per_pacgum": 100000000000000000000000000000,
-  "points_per_super_pacgum": 50000000000000000000000000000000000000000000000000,
-  "points_per_ghost": 20000000000000000000000000000000000000000000,
+  "points_per_pacgum": 10,
+  "points_per_super_pacgum": 50,
+  "points_per_ghost": 200,
   "seed": 42,
   #Levels list
   "level":[
