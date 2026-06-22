@@ -20,9 +20,9 @@ make run
 
 ### Controls
 * **Arrow Keys**: Move Pac-Man up, down, left, or right.
-* **Space**: Pause / Resume the game.
-* **N**: Cheat Mode (Instantly advance to the next level).
-* **Escape**: Quit the game.
+* **ESC**: Pause / Resume the game / Quit the game..
+* **/next**: Cheat Mode (Instantly advance to the next level).
+* **/cheat**: Cheat Mode (Invincibility mode).
 
 ## Configuration
 The game is highly customizable via the `config.json` file. 

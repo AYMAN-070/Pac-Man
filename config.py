@@ -20,9 +20,16 @@ class GameConfig:
             "points_per_ghost": 200,
             "seed": 42,
             "level": [
-                {"width": 21, "height": 21},  # Niveau 1
+                {"width": 15, "height": 15},  # Niveau 1
                 {"width": 25, "height": 25},  # Niveau 2
-                {"width": 31, "height": 31}   # Niveau 3
+                {"width": 31, "height": 31},   # Niveau 3
+                {"width": 80, "height": 21},  # Niveau 4
+                {"width": 45, "height": 23},  # Niveau 5
+                {"width": 31, "height": 31},   # Niveau 6
+                {"width": 50, "height": 55},  # Niveau 7
+                {"width": 31, "height": 80},   # Niveau 8
+                {"width": 80, "height": 80},   # Niveau 9
+                {"width": 10, "height": 10},   # Niveau 10
             ]
         }
         self.load_config()
@@ -49,6 +56,13 @@ class GameConfig:
             for key, value in user_settings.items():
                 if key in self.settings:
                     self.settings[key] = value
+            if self.settings['points_per_pacgum'] <= 0:
+                self.settings['points_per_pacgum'] = 10
+            if self.settings['points_per_super_pacgum'] <= 0:
+                self.settings['points_per_super_pacgum'] = 50
+            if self.settings['points_per_ghost'] <= 0:
+                self.settings['points_per_ghost'] = 200
+
             if not isinstance(self.settings.get('lives'), int):
                 self.settings['lives'] = 3
                 print("[WARNING] 'lives' must be an integer."
@@ -57,9 +71,9 @@ class GameConfig:
                 self.settings['lives'] = 1
                 print("[WARNING] 'lives' cannot be < 1."
                       "Forcing to 1.", file=sys.stderr)
-            elif self.settings['lives'] > 3:
-                self.settings['lives'] = 3
-                print("[WARNING] 'lives' capped at 3 "
+            elif self.settings['lives'] > 99:
+                self.settings['lives'] = 99
+                print("[WARNING] 'lives' capped at 99 "
                       "to preserve UI stability.", file=sys.stderr)
             if 'level' in self.settings and isinstance(self.settings['level'],
                                                        list):
@@ -71,8 +85,8 @@ class GameConfig:
                               f"Defaulting to 25.", file=sys.stderr)
                     elif lvl['width'] < 10:
                         lvl['width'] = 10
-                    elif lvl['width'] > 200:
-                        lvl['width'] = 200
+                    elif lvl['width'] > 80:
+                        lvl['width'] = 80
                     # Sécurité pour Height
                     if not isinstance(lvl.get('height'), int):
                         lvl['height'] = 25
@@ -80,8 +94,8 @@ class GameConfig:
                               f"Defaulting to 25.", file=sys.stderr)
                     elif lvl['height'] < 10:
                         lvl['height'] = 10
-                    elif lvl['height'] > 200:
-                        lvl['height'] = 200
+                    elif lvl['height'] > 80:
+                        lvl['height'] = 80
             print(f"Configuration successfully loaded from {self.filepath}")
         except FileNotFoundError:
             print(f"Warning: The file '{self.filepath}' could not be found. "

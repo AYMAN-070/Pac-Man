@@ -1,29 +1,25 @@
 
 import sdl2 as s2
-import sdl2.ext.image as s2_img
 import sdl2.sdlttf as s2_ttf
-import ctypes
 from typing import Any
 import time
 import random
-
 from engine import GameEngine
-from ghost import GhostState
-from player import Direction
 from sounds import Sounds
 
 
 class DiplayError(Exception):
-    """  """ # TODO
+    """  """   # TODO
     pass
 
+
 class BaseDisplay:
-    """  """ # TODO
+    """  """   # TODO
 
     def __init__(self, engine: GameEngine, fps_limit: int,
                  renderer: Any, sounds: Sounds, textures: dict[str, Any],
                  font1: Any, font2: Any, font3: Any, midxy: list[int]) -> None:
-        """  """ # TODO
+        """  """  # TODO
         self.engine = engine
         self.s = sounds
         self.sounds = sounds.sounds
@@ -52,8 +48,6 @@ class BaseDisplay:
         self.i = 0
         self.seed = 0
         self.level = 0
-
-
         self.ghost_color = {
                 0 : "sprit_ghost1",
                 1 : "sprit_ghost2",

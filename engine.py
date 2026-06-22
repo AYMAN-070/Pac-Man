@@ -193,11 +193,8 @@ class GameEngine:
 
     def cheat_next_level(self) -> None:
         """pass to next level"""
-        self.current_level += 1
-        if self.current_level > 10:
-            self.is_victory = True
-            print("CHEAT : You won the game!")
-        else:
+        if self.current_level < 10:
+            self.current_level += 1
             self.load_level()
             print(f"CHEAT : Passage au niveau {self.current_level} !")
 
@@ -278,6 +275,7 @@ class GameEngine:
         print(f"Level {self.current_level} Complete!")
         self.current_level += 1
         if self.current_level > 10:
+            self.current_level = 10
             self.is_victory = True
             print("You won the game!")
         else:

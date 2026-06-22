@@ -22,7 +22,7 @@ class HighscoreManager:
                 if isinstance(data, list):
                     valid_scores = []
                     for entry in data:
-                        if (isinstance(entry, dict) and 
+                        if (isinstance(entry, dict) and
                                 isinstance(entry.get("name"), str) and
                                 isinstance(entry.get("score"), int)):
                             valid_scores.append(entry)
