@@ -19,13 +19,14 @@ make run
 ```
 
 ### Controls
+* **WSAD Keys**: W : Move Pac-Man up, S: down, A: left, or D: right.
 * **Arrow Keys**: Move Pac-Man up, down, left, or right.
 * **ESC**: Pause / Resume the game / Quit the game..
 * **/next**: Cheat Mode (Instantly advance to the next level).
 * **/cheat**: Cheat Mode (Invincibility mode).
 
 ## Configuration
-The game is highly customizable via the `config.json` file. 
+The game is highly customizable via the `config.json` file.
 * **Robust Parsing**: Our parser safely handles comments starting with `#` (which standard JSON does not support) and automatically applies secure fallback values if keys are missing or invalid.
 * **Dynamic Balancing**: Instead of static global timers, the engine calculates the time limit for each level dynamically based on the walkable area (`time = accessible_cells / 2.5`).
 
@@ -38,15 +39,19 @@ The game relies on an external procedural generator (`A-Maze-ing`). To ensure th
 2. **BFS Flood-Fill**: We implemented a Breadth-First Search algorithm to map reachable areas.
 3. **Procedural Correction**: If any of the 4 corners are isolated by walls, the engine breaks the minimum number of walls needed to reconnect them to the main path, ensuring items and ghosts can spawn safely.
 
-## Software Architecture
+## General Software Architecture
 The architecture strictly follows Object-Oriented Programming (OOP) principles and is fully type-hinted (`mypy` compliant).
 * `GameEngine`: Manages the main game loop, frame rendering, and game states (Menu, Playing, Pause, Game Over).
 * `Maze`: Handles the grid instantiation, external package adaptation, and procedural wall correction.
 * `Entity (Pac-Man & Ghosts)`: Manages collision detection, movement logic, and AI pathfinding.
+* `
 
 ## Project Management & Packaging
 * **Project Documentation**: All management documents (Kanban timeline, task distribution, acceptance testing, and risk analysis) are available in the `/project_management` directory.
 * **Packaging**: A deployment script is provided at the root of the repository to package the game into a standalone executable using PyInstaller, making it ready for distribution on platforms like Itch.io.
+
+ Implementation 
+
 
 ## Resources & AI Usage
 Artificial Intelligence (Gemini/ChatGPT) was used during this project as a technical assistant to:
