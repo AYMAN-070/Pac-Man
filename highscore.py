@@ -23,8 +23,10 @@ class HighscoreManager:
                     valid_scores = []
                     for entry in data:
                         if (isinstance(entry, dict) and
-                                isinstance(entry.get("name"), str) and
-                                isinstance(entry.get("score"), int)):
+                                isinstance(entry.get("name"), str)
+                                and entry.get("name").isalnum()
+                                and isinstance(entry.get("score"), int)
+                                and entry.get("score") >= 0):
                             valid_scores.append(entry)
                     self.scores = valid_scores
                 else:
@@ -42,6 +44,7 @@ class HighscoreManager:
                 json.dump(self.scores, file, indent=4)
         except IOError as e:
             print(f"[ERROR] Error while saving scores : {e}", file=sys.stderr)
+
     def clean_player_name(self, name: str) -> str:
         """Clean and return valid name"""
         if not name:
