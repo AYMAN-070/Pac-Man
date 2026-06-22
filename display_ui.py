@@ -16,7 +16,7 @@ class DisplayUI(BaseDisplay):
 
     def draw_background(self) -> None:
 
-        if self.midxy[0] < self.midxy[1]:
+        if self.midxy[0] / self.midxy[1] < 16 / 9:
             backh = int((self.midxy[1] + 1) * 2)
             backw = int((backh + 5) / 1080 * 1920)
         else:
@@ -65,6 +65,8 @@ class DisplayUI(BaseDisplay):
         dst = s2.SDL_Rect(int(self.midxy[0] -  ((w - 100)/ 2)), jump + pading * 4, w - 100, h - 80)
         s2.SDL_RenderCopy(self.renderer, self.t['menu_exit'], None, dst)
 
+        self.draw_music_status()
+
         s2.SDL_RenderPresent(self.renderer)
 
     def draw_return_menu(self) -> None:
@@ -74,11 +76,21 @@ class DisplayUI(BaseDisplay):
         dst = s2.SDL_Rect(scalex, scaley, 200, 100)
         s2.SDL_RenderCopy(self.renderer, self.t["return_menu"], None, dst)
 
+    def draw_music_status(self) -> None:
+        dst = s2.SDL_Rect(25, self.midxy[1] * 2 - 175, 150, 150)
+        if self.s.music_off:
+            s2.SDL_RenderCopy(self.renderer, self.t["music_off"], None, dst)
+        else:
+            s2.SDL_RenderCopy(self.renderer, self.t["music_on"], None, dst)
+
+
     def display_escape(self) -> None:
         
         s2.SDL_RenderClear(self.renderer)
         s2.SDL_SetTextureColorMod(self.t['sprit_ghost1'], 65, 50, 80)
         s2.SDL_SetTextureColorMod(self.t['return_menu'], 140, 120, 180)
+        s2.SDL_SetTextureColorMod(self.t['music_on'], 140, 120, 180)
+        s2.SDL_SetTextureColorMod(self.t['music_off'], 140, 120, 180)
         
         size = 50
 
@@ -95,9 +107,14 @@ class DisplayUI(BaseDisplay):
 
         
         self.draw_return_menu() 
+        self.draw_music_status()
 
         s2.SDL_SetTextureColorMod(self.t['sprit_ghost1'], 255, 255, 255)
         s2.SDL_SetTextureColorMod(self.t['return_menu'], 255, 255, 255)
+        s2.SDL_SetTextureColorMod(self.t['music_on'], 255, 255, 255)
+        s2.SDL_SetTextureColorMod(self.t['music_off'], 255, 255, 255)
+
+
         s2.SDL_RenderPresent(self.renderer)
 
     def display_instructions(self) -> None:

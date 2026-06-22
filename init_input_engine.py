@@ -131,12 +131,16 @@ class InitInputEngine:
             raise
 
     def set_cell_size(self, w: int, h: int) -> None:
-        if w < h:
-            self.d.cell = int((w - 250) / len(self.d.maze))
+        pad = 250
+        ref_x = int((w - pad) / len(self.d.maze[0]))
+        ref_w = int((h - pad) / len(self.d.maze))
+        if ref_x < ref_w:
+            self.d.cell = ref_x
         else:
-            self.d.cell = int((h - 250) / len(self.d.maze))
+            self.d.cell = ref_w
+
         if self.d.cell < 50:
-            self.d.cell = 50
+            self.d.cell = 80
             self.d.pov_rpg = True
         else:
             self.d.pov_rpg = False

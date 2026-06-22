@@ -21,6 +21,7 @@ class Sounds:
         self.sounds = dict()
         self.is_active = False
         self.active: str = ""
+        self.music_off = False
 
     def load_sounds(self) -> None:
         for elem in SOUNDS_PATH[1:]:
@@ -49,6 +50,9 @@ class Sounds:
             s2_mix.Mix_HaltChannel(self.channel)
             self.channel = s2_mix.Mix_PlayChannel(-1, self.sounds[name], loop)
             self.active = name
+        if self.music_off:
+            self.halt_background_sound()
+
 
     def halt_background_sound(self) -> None:
         if self.active:
@@ -58,4 +62,13 @@ class Sounds:
         if self.active:
             s2_mix.Mix_HaltChannel(self.channel)
             self.is_active = False
+
+    def music_off_background_sound(self, mode: bool) -> None:
+        self.music_off = mode
+        if self.is_active:
+            if mode == True:
+                self.halt_background_sound()
+            else:
+                s2_mix.Mix_Resume(self.channel)
+
 
