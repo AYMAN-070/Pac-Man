@@ -1,16 +1,11 @@
 
-
 import sys
-import ctypes
 from enum import IntEnum
-from typing import Callable, Any
-from pathlib import Path
 try:
     import sdl2 as s2
     import sdl2.ext.image as s2_img
     import sdl2.sdlttf as s2_ttf
     import sdl2.sdlmixer as s2_mix
-    import mazegenerator
 except ImportError as e:
     print(f"Error : missing library ({e.name}).")
     print("Solution : lunch 'make run'.")
@@ -22,17 +17,22 @@ from display import Display
 
 
 class D(IntEnum):  # DEFAULT
-    """  """  # TODO
+    """  """
+    # TODO
 
     w: int = 1600
     h: int = 1300
 
+
 class InputError(Exception):
-    """  """  # TODO
+    """  """
+    # TODO
     pass
 
+
 class InitInputEngine:
-    """  """  # TODO
+    """  """
+    # TODO
 
     def __init__(self, path: str) -> None:
         """  """  # TODO
@@ -55,14 +55,17 @@ class InitInputEngine:
             s2.SDL_Quit()
             raise InputError("Error. Can't init SDL_TTF")
         try:
-            self.font1 = s2_ttf.TTF_OpenFont(b"assets/MoonAndLatte-vn8LO.ttf", 50)
+            self.font1 = s2_ttf.TTF_OpenFont(b"assets/MoonAndLatte-vn8LO.ttf",
+                                             50)
             if not self.font1:
                 raise InputError("can't load font")
-            self.font2 = s2_ttf.TTF_OpenFont(b"assets/Shirtsy-8Z2A.ttf", 50)
+            self.font2 = s2_ttf.TTF_OpenFont(b"assets/Shirtsy-8Z2A.ttf",
+                                             50)
             if not self.font2:
                 s2_ttf.TTF_CloseFont(self.font1)
                 raise InputError("can't load font")
-            self.font3 = s2_ttf.TTF_OpenFont(b"assets/Brookeshappell8-eoKB.ttf", 50)
+            self.font3 = s2_ttf.TTF_OpenFont(b"assets/Brookeshappell8-eoKB.ttf",
+                                             50)
             if not self.font3:
                 s2_ttf.TTF_CloseFont(self.font1)
                 s2_ttf.TTF_CloseFont(self.font2)
@@ -72,7 +75,7 @@ class InitInputEngine:
             s2.SDL_Quit()
             raise
 
-        check = s2_mix.Mix_OpenAudio(44100, s2_mix.MIX_DEFAULT_FORMAT, 2, 2028) # work in progress
+        check = s2_mix.Mix_OpenAudio(44100, s2_mix.MIX_DEFAULT_FORMAT, 2, 2028)
         if check != 0:
             self.close_fonts()
             s2.SDL_Quit()

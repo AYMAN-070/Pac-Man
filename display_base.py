@@ -34,7 +34,7 @@ class BaseDisplay:
         self.sprits_rate = 0
         self.time = time.time()
         self.end = False
-    
+
         self.p_direction = ""
         self.delta_time = fps_limit / 1000
         self.font1 = font1
@@ -49,10 +49,10 @@ class BaseDisplay:
         self.seed = 0
         self.level = 0
         self.ghost_color = {
-                0 : "sprit_ghost1",
-                1 : "sprit_ghost2",
-                2 : "sprit_ghost3",
-                3 : "sprit_ghost4",
+            0: "sprit_ghost1",
+            1: "sprit_ghost2",
+            2: "sprit_ghost3",
+            3: "sprit_ghost4",
         }
         self.txt_color = {
                         "white":  s2.SDL_Color(255, 255, 255, 255),
@@ -78,7 +78,8 @@ class BaseDisplay:
         ]
 
     def init_engine(self, level: int):
-        """  """ #  TODO
+        """  """
+        #  TODO
         self.maze = self.engine.maze.grid
         self.player = self.engine.player
         self.ghosts = self.engine.ghosts
@@ -97,7 +98,8 @@ class BaseDisplay:
                   font: Any,
                   color: str) -> None:
 
-        surface = s2_ttf.TTF_RenderText_Solid(font, string.encode('utf-8'), self.txt_color[color])
+        surface = s2_ttf.TTF_RenderText_Solid(font, string.encode('utf-8'),
+                                              self.txt_color[color])
         texture = s2.SDL_CreateTextureFromSurface(self.renderer, surface)
         s2.SDL_FreeSurface(surface)
         dst = s2.SDL_Rect(x, y, w, h)        

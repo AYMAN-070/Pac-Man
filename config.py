@@ -58,10 +58,16 @@ class GameConfig:
                     self.settings[key] = value
             if self.settings['points_per_pacgum'] <= 0:
                 self.settings['points_per_pacgum'] = 10
+            if self.settings['points_per_pacgum'] > 100000:
+                self.settings['points_per_pacgum'] = 100000
             if self.settings['points_per_super_pacgum'] <= 0:
                 self.settings['points_per_super_pacgum'] = 50
+            if self.settings['points_per_super_pacgum'] > 100000:
+                self.settings['points_per_super_pacgum'] = 100000
             if self.settings['points_per_ghost'] <= 0:
                 self.settings['points_per_ghost'] = 200
+            if self.settings['points_per_ghost'] > 100000:
+                self.settings['points_per_ghost'] = 100000
 
             if not isinstance(self.settings.get('lives'), int):
                 self.settings['lives'] = 3

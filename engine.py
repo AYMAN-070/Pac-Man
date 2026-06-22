@@ -270,7 +270,7 @@ class GameEngine:
         """
         # We scan the grid to see if any items are left
         for row in self.maze.grid:
-            if 2 in row or 3 in row:
+            if 2 in row:
                 return
         print(f"Level {self.current_level} Complete!")
         self.current_level += 1
