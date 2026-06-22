@@ -1,60 +1,223 @@
-*This project has been created as part of the 42 curriculum by ayhammou, abenabde.*
+*This project has been created as part of the 42 curriculum by abenabde, ayhammou.*
 
-# Pac-Man: Procedural Arcade Clone
+---
+
+# 🕹️ Pac-Man: Treasure Adventure
 
 ## Description
-This project is a recreation of the classic arcade game **Pac-Man**, developed in Python using the SDL2 library. It features procedural maze generation, intelligent Ghost AI, and a robust Object-Oriented engine.
+
+A fully-featured Pac-Man clone developed in Python as part of the 42 school curriculum. The player navigates a procedurally generated maze, eating pacgums and super-pacgums while avoiding (or hunting!) ghosts. The game features 10 progressively larger levels, a real-time HUD, a pause menu, a highscore system, cheat codes for peer review, and a complete SDL2-based graphical interface with sounds and animations.
+
+The project is structured around a clean separation between the game engine (logic) and the display/input layers, making the codebase modular and easy to maintain.
+
+---
 
 ## Instructions
 
-### Compilation & Execution
-The project uses a standard Makefile for easy deployment. Run the following commands in your terminal:
+### Requirements
+
+- Python 3.11+
+- [uv](https://github.com/astral-sh/uv) (Python package manager)
+- SDL2, SDL2_ttf, SDL2_mixer (system libraries)
+
+### Installation & Run
 
 ```bash
-# Install dependencies
-make install
-
-# Run the game
 make run
 ```
 
+This command will automatically install all Python dependencies (via `uv sync`) and the bundled `mazegenerator` package, then launch the game with the default `config.json`.
+
+### Manual run
+
+```bash
+uv run python src/pac-man.py config.json
+```
+
+### Other Makefile targets
+
+| Command | Description |
+|---|---|
+| `make install` | Install dependencies only |
+| `make debug` | Run with Python debugger (pdb) |
+| `make lint` | Run flake8 + mypy checks |
+| `make lint-strict` | Run mypy in strict mode |
+| `make clean` | Remove `__pycache__` and mypy cache |
+| `make fclean` | Full clean including virtualenv |
+
 ### Controls
-* **WSAD Keys**: W : Move Pac-Man up, S: down, A: left, or D: right.
-* **Arrow Keys**: Move Pac-Man up, down, left, or right.
-* **ESC**: Pause / Resume the game / Quit the game..
-* **/next**: Cheat Mode (Instantly advance to the next level).
-* **/cheat**: Cheat Mode (Invincibility mode).
+
+| Key | Action |
+|---|---|
+| Arrow keys / WASD | Move Pac-Man |
+| Escape | Pause / open pause menu |
+| `/cheat` + Enter | Toggle invincibility |
+| `/next` + Enter | Skip to next level |
+
+---
 
 ## Configuration
-The game is highly customizable via the `config.json` file.
-* **Robust Parsing**: Our parser safely handles comments starting with `#` (which standard JSON does not support) and automatically applies secure fallback values if keys are missing or invalid.
-* **Dynamic Balancing**: Instead of static global timers, the engine calculates the time limit for each level dynamically based on the walkable area (`time = accessible_cells / 2.5`).
 
-## Highscore System
-We implemented a persistent highscore system. Upon finishing the game (Victory or Game Over), players can input their name (up to 10 alphanumeric characters). The Top 10 scores are saved locally in a persistent file and displayed on the Main Menu.
+The game reads its settings from a JSON file passed as a command-line argument (default: `config.json`). Lines starting with `#` are treated as comments and ignored.
 
-## Maze Generation & Pathfinding
-The game relies on an external procedural generator (`A-Maze-ing`). To ensure the generated mazes are always playable:
-1. **Fallback Grid**: A `dummy_grid` is automatically generated if the external package fails.
-2. **BFS Flood-Fill**: We implemented a Breadth-First Search algorithm to map reachable areas.
-3. **Procedural Correction**: If any of the 4 corners are isolated by walls, the engine breaks the minimum number of walls needed to reconnect them to the main path, ensuring items and ghosts can spawn safely.
+### Available settings
+
+| Key | Type | Default | Description |
+|---|---|---|---|
+| `highscore_filename` | string | `"highscores.json"` | Path to the highscore file |
+| `lives` | int | `3` | Starting lives (1–99) |
+| `points_per_pacgum` | int | `10` | Points for eating a pacgum (1–100000) |
+| `points_per_super_pacgum` | int | `50` | Points for eating a super-pacgum (1–100000) |
+| `points_per_ghost` | int | `200` | Points for eating an edible ghost (1–100000) |
+| `seed` | int | `42` | Base seed for maze generation |
+| `level` | list | see below | Per-level width/height configuration |
+
+### Level configuration
+
+Each entry in the `level` list defines the maze dimensions for that level. Width and height are clamped to `[10, 80]` and automatically adjusted to be odd numbers (required by the maze generator).
+
+```json
+{
+  "level": [
+    {"width": 15, "height": 15},
+    {"width": 25, "height": 25},
+    ...
+  ]
+}
+```
+
+If the player reaches a level beyond the configured list, the last configured level is reused.
+
+---
+
+## Highscore
+
+Scores are stored in a JSON file (default: `highscores.json`) as a list of `{"name": ..., "score": ...}` objects, sorted in descending order. Only the **top 10** scores are kept.
+
+When a game ends (win or loss), the player is prompted to enter their name (alphanumeric only, max 10 characters). The score is then inserted, the list re-sorted, and the file saved.
+
+On load, the file is validated: entries with non-alphanumeric names, negative scores, or wrong types are silently discarded. A missing or corrupt file is handled gracefully — a fresh list is started without crashing.
+
+This approach was chosen for its simplicity and portability: no database is needed, the file is human-readable, and it can easily be shared or reset by the player.
+
+---
+
+## Maze Generation
+
+Mazes are generated using the bundled **A-Maze-ing** (`mazegenerator`) package, which produces imperfect mazes using a configurable seed. The generation pipeline works as follows:
+
+1. The external generator is called with a seed derived from `base_seed + current_level`, ensuring reproducible mazes (level 1 is always the same, subsequent levels are random but deterministic per seed).
+2. The raw output (a grid encoded with bitflags for wall directions) is parsed and scaled to the target width/height defined in the config.
+3. The center area is carved out and the **42 logo** is drawn in walls as an easter egg.
+4. A flood-fill from the center ensures all four ghost-spawn corners are reachable, carving corridors where necessary.
+5. Super-pacgums are placed in the 4 corners, and regular pacgums fill all remaining reachable corridors.
+
+If the external generator fails for any reason, a basic fallback grid (checkerboard of walls) is used instead, and the same post-processing steps are applied.
+
+---
+
+## Implementation
+
+### Game loop
+
+The game runs at a capped framerate (≈60 FPS via `SDL_Delay`). Each frame, SDL2 events are polled, then the appropriate display/compute function is called. Movement and collision resolution happen inside `GameEngine.update(delta_time)`, which is called only when the player has chosen a direction.
+
+### Movement system
+
+Both Pac-Man and ghosts use a **rail movement** system (`rail_movements` / `update_pos`): entities move toward a discrete grid destination cell, passing through the center of each cell to ensure clean directional changes. Speed is expressed in cells/frame and excess movement (overshoot) is carried over to the next step.
+
+### Ghost AI
+
+- **Chase mode**: when within 10 cells (Manhattan distance), ghosts use BFS to find the shortest path to Pac-Man. Beyond that range, they move randomly among valid directions (excluding U-turns).
+- **Edible mode**: ghosts flee by choosing the direction that maximises their distance from Pac-Man.
+- **Dead mode**: ghosts freeze in their corner for 5 seconds before respawning in Chase mode.
+
+### Collision detection
+
+Collisions use a tolerance-based hitbox (±0.5 cell) on floating-point positions, allowing smooth detection even between grid cells.
+
+### Sprite animation
+
+Sprite sheets are used for Pac-Man (4 directions × 5 frames + death animation) and ghosts (4 directions × 5 frames). Animation frames are advanced every 5 game ticks.
+
+---
 
 ## General Software Architecture
-The architecture strictly follows Object-Oriented Programming (OOP) principles and is fully type-hinted (`mypy` compliant).
-* `GameEngine`: Manages the main game loop, frame rendering, and game states (Menu, Playing, Pause, Game Over).
-* `Maze`: Handles the grid instantiation, external package adaptation, and procedural wall correction.
-* `Entity (Pac-Man & Ghosts)`: Manages collision detection, movement logic, and AI pathfinding.
-* `
 
-## Project Management & Packaging
-* **Project Documentation**: All management documents (Kanban timeline, task distribution, acceptance testing, and risk analysis) are available in the `/project_management` directory.
-* **Packaging**: A deployment script is provided at the root of the repository to package the game into a standalone executable using PyInstaller, making it ready for distribution on platforms like Itch.io.
+```
+src/
+├── pac-man.py              # Entry point
+├── engine/                 # Pure game logic (no display)
+│   ├── config.py           # JSON config loader & validator
+│   ├── engine.py           # GameEngine: coordinates all subsystems
+│   ├── maze.py             # Maze generation, item placement, wall queries
+│   ├── player.py           # Player state, direction, lives
+│   ├── ghost.py            # Ghost state machine (Chase/Edible/Dead)
+│   └── highscore.py        # Score persistence (read/write JSON)
+├── display/                # SDL2 rendering layer
+│   ├── display_base.py     # Shared rendering utilities (text, sprites, colors)
+│   ├── display_game.py     # In-game rendering (maze, Pac-Man, ghosts, HUD)
+│   ├── display_ui.py       # Menu, pause, scores, instructions, end screen
+│   ├── display.py          # Display = DisplayGame + DisplayUI (multiple inheritance)
+│   └── helpers/
+│       ├── textures.py     # SDL2 texture loader
+│       └── sounds.py       # SDL2_mixer sound manager
+└── inputs/
+    ├── init_input_engine.py  # SDL2 init: window, renderer, fonts, sounds, textures
+    ├── input_sdl_engine.py   # Core event loop & state machine (menu → game → end)
+    └── input_process.py      # Key/mouse handlers per game state
+```
 
- Implementation 
+### Key relationships
 
+- `GameEngine` owns `Maze`, `Player`, `List[Ghost]`, `HighscoreManager`, and `GameConfig`. It exposes `update(delta_time)` and `get_state()`.
+- `Display` inherits from both `DisplayGame` and `DisplayUI` (Python multiple inheritance), sharing the base renderer and texture dictionary from `BaseDisplay`.
+- `InputEngine` inherits from `SDLCoreEngine → InitInputEngine`. `InitInputEngine` owns SDL2 resources and `GameEngine`; `SDLCoreEngine` runs the event loop; `InputEngine` provides the per-state key and mouse handlers.
+- The engine layer has **no dependency** on SDL2 — it can be tested or reused independently.
 
-## Resources & AI Usage
-Artificial Intelligence (Gemini/ChatGPT) was used during this project as a technical assistant to:
-* Brainstorm and optimize the BFS (Flood-Fill) logic for corner accessibility.
-* Debug hardware-specific compatibility issues (e.g., SDL2 Audio segmentation faults on WSL).
-* Generate the Mermaid.js syntax for our project management workflow charts.
+---
+
+## Cheat Mode
+
+Cheat codes are entered via the in-game text input (press `/` to open, then type the command and press Enter):
+
+| Command | Effect |
+|---|---|
+| `/cheat` | Toggle invincibility (ghosts cannot kill Pac-Man) |
+| `/next` | Immediately skip to the next level |
+
+These are designed to let peer reviewers quickly test all game features without playing through every level.
+
+---
+
+## Resources
+
+### Documentation & References
+- [SDL2 Python bindings (pysdl2)](https://pysdl2.readthedocs.io/)
+- [SDL2 official documentation](https://wiki.libsdl.org/)
+- [SDL keysym reference](https://www.libsdl.org/release/SDL-1.2.15/docs/html/sdlkey.html) — key symbol list, very useful for input handling
+
+### Tools
+- [GIMP](https://www.gimp.org/) — used to create and edit all game graphics and sprites
+- [Audacity](https://www.audacityteam.org/) — used to create and edit all game sounds
+
+### AI Usage
+
+AI (Claude, by Anthropic) was used during this project for the following tasks:
+- Generating this README
+- Explaining SDL2 best practices, internal workings, and available functions relevant to the display approach
+- Describing best practices and tools for audio normalization with Audacity
+- Researching solutions and debugging for the maze generation and game engine parts
+
+All code was written and validated by the project authors. AI was not used to generate game logic autonomously.
+
+---
+
+## Project Management
+
+The project was managed collaboratively between two contributors:
+
+- **abenabde** — all files in `src/display/` and `src/inputs/`, the `update_pos` and `rail_movements` movement functions in `src/engine/engine.py`, and all game assets (graphics, sprites, fonts, sounds) in the `assets/` directory
+- **ayhammou** — all remaining files in `src/engine/` (`config.py`, `engine.py` minus the two movement functions, `ghost.py`, `highscore.py`, `maze.py`, `player.py`)
+
+Full project management documentation (timeline, risk analysis, team organization, testing plan) is available in the [`project_management/`](./project_management/) directory.
