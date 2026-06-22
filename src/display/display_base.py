@@ -26,6 +26,8 @@ class BaseDisplay:
         self.eat_sounds = ["eat_sound1", "eat_sound2", "eat_sound3"]
         self.renderer = renderer
         self.t = textures
+        self.shake_death = 0
+
         self.init_engine(self.engine.current_level)
 
         self.rotasprit = 1
@@ -34,6 +36,7 @@ class BaseDisplay:
         self.sprits_rate = 0
         self.time = time.time()
         self.end = False
+        self.winned = False
 
         self.p_direction = ""
         self.delta_time = fps_limit / 1000
@@ -87,6 +90,9 @@ class BaseDisplay:
         self.sprits_rate = 0
         self.rotasprit = 1
         self.rotadeath = -0.1
+        if self.shake_death != 0:
+            self.midxy[0] = self.shake_death
+        self.shake_death = 0
         self.end = False
         self.level = level
         for ghost in self.ghosts:

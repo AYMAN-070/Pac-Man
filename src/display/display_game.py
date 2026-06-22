@@ -142,6 +142,7 @@ class DisplayGame(BaseDisplay):
         if not self.end:
             self.s.set_background_sound("death_sound", 0)
             self.end = True
+            self.winned = False
             self.time = time.time()
         now = time.time()
         if now - self.time > 5:
@@ -175,6 +176,7 @@ class DisplayGame(BaseDisplay):
         if not self.end:
             self.s.set_background_sound("win_sound", 0)
             self.end = True
+            self.winned = True
             self.time = time.time()
         now = time.time()
         if now - self.time > 5:
@@ -192,11 +194,25 @@ class DisplayGame(BaseDisplay):
         
         lives = self.player.lives
         level = self.engine.current_level
-        if self.player.next_direction != Direction.NONE:
-            self.engine.update(self.delta_time)
-            if level != self.engine.current_level:
-                self.init_engine(self.engine.current_level)
+        if self.shake_death == 0:
+            if self.player.next_direction != Direction.NONE:
+                self.engine.update(self.delta_time)
+                if level != self.engine.current_level:
+                    self.init_engine(self.engine.current_level)
+        else:
+            if self.midxy[0] <= self.shake_death:
+                self.midxy[0] -= 2
+            else:
+                self.midxy[0] += 2
+            if self.midxy[0] == self.shake_death - 12:
+                self.midxy[0] = self.shake_death + 1
+
+            if self.midxy[0] == self.shake_death + 11:
+                self.midxy[0] = self.shake_death
+                self.shake_death = 0
+
         if self.player.lives != lives:
+            self.shake_death = self.midxy[0]
             channel = s2_mix.Mix_PlayChannel(-1, self.sounds["left_life_sound"], 0)
 
         if self.pov_rpg:
@@ -221,6 +237,13 @@ class DisplayGame(BaseDisplay):
                     case 2:  # PACGUM
                         self.draw_cell("pacgum", posx, posy)
                     case 3:  # SUPERPACGUM
+                        if self.rotasprit > 3:
+                            s2.SDL_SetTextureColorMod(self.t["megapacgum"], 255, 240, 100)
+                        elif self.rotasprit == 3:
+                            s2.SDL_SetTextureColorMod(self.t["megapacgum"], 255, 247, 202)
+                        else:
+                            s2.SDL_SetTextureColorMod(self.t["megapacgum"], 255, 255, 255)
+
                         self.draw_cell("megapacgum", posx, posy)
                 posx += self.cell
             posy += self.cell

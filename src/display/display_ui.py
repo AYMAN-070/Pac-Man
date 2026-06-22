@@ -229,24 +229,12 @@ class DisplayUI(BaseDisplay):
         self.draw_text(s_score, int(self.midxy[0] - w / 2), y, w, c_size * 2, self.font1, "orange")
 
         if self.i != self.engine.score:
-            if self.engine.score > 1000000000:
-                self.i += 10000000
-            if self.engine.score > 100000000:
-                self.i += 1000000
-            elif self.engine.score > 10000000:
-                self.i += 100000
-            elif self.engine.score > 1000000:
-                self.i += 10000
-            elif self.engine.score > 100000:
-                self.i += 1000
-            elif self.engine.score > 10000:
-                self.i += 500
-            elif self.engine.score > 1500:
-                self.i += 100
-            elif self.engine.score > 100:
-                self.i += 10
+            add = self.engine.score / 100
+            if int(add) > 0:
+                add = int(add)
             else:
-                self.i += 1
+                add = int(add) + 1
+            self.i += add
             s2.SDL_RenderPresent(self.renderer)
             return
 
@@ -278,4 +266,21 @@ class DisplayUI(BaseDisplay):
             msg = "ONLY ALPHANUMERIC CHARACTERS ARE ALLOWED"
             w = len(msg) * 30
             self.draw_text(msg, int(self.midxy[0] - w / 2), y + 200, w, 40, self.font2, "red")
+
+        if self.winned:
+            msg = "YOU   WIN"
+            w = int(50 * len(msg))
+            h = 250
+            x = int(self.midxy[0] - w / 2)
+            y = int(self.midxy[1] * 2 - h - 20)
+            self.draw_text(msg, x, y, w, h, self.font2, "green")
+        else:
+            msg = "YOU   LOSE"
+            w = int(50 * len(msg))
+            h = 250
+            x = int(self.midxy[0] - w / 2)
+            y = int(self.midxy[1] * 2 - h - 20)
+            self.draw_text(msg, x, y, w, h, self.font2, "black")
+
         s2.SDL_RenderPresent(self.renderer)
+
