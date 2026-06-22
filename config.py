@@ -71,8 +71,8 @@ class GameConfig:
                               f"Defaulting to 25.", file=sys.stderr)
                     elif lvl['width'] < 10:
                         lvl['width'] = 10
-                    elif lvl['width'] > 50:
-                        lvl['width'] = 50
+                    elif lvl['width'] > 200:
+                        lvl['width'] = 200
                     # Sécurité pour Height
                     if not isinstance(lvl.get('height'), int):
                         lvl['height'] = 25
@@ -80,8 +80,8 @@ class GameConfig:
                               f"Defaulting to 25.", file=sys.stderr)
                     elif lvl['height'] < 10:
                         lvl['height'] = 10
-                    elif lvl['height'] > 50:
-                        lvl['height'] = 50
+                    elif lvl['height'] > 200:
+                        lvl['height'] = 200
             print(f"Configuration successfully loaded from {self.filepath}")
         except FileNotFoundError:
             print(f"Warning: The file '{self.filepath}' could not be found. "
