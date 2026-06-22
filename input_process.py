@@ -104,12 +104,25 @@ class InputEngine(SDLCoreEngine):
 
     def check_button(self, x: int, y: int) -> str:
         button = self.get_menu_buttons()
+        self.set_music_off(x, y)
         for option in button.keys():
             if button[option]['lu'][0] < x < button[option]['rd'][0]:
                 if button[option]['lu'][1] < y < button[option]['rd'][1]:
                     return str(option)
         return ""
     
+    def set_music_off(self, x: int, y: int) -> str:
+        lux = 25
+        luy = self.midxy[1] * 2 - 175
+        size = 150
+        if lux < x < lux + size:
+            if luy < y < luy + (size):
+                if self.s.music_off:
+                    self.s.music_off_background_sound(False)
+                else:
+                    self.s.music_off_background_sound(True)
+
+
     def return_menu(self, event: Any) -> str:
 
         size = 190
@@ -122,7 +135,7 @@ class InputEngine(SDLCoreEngine):
         return ""
     
     def escape_mouse(self, event: Any) -> str:
-        
+        self.set_music_off(event.button.x, event.button.y)
         if event.button.button == s2.SDL_BUTTON_LEFT:
             size = 600
             ypad = 300

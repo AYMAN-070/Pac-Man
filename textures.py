@@ -34,6 +34,8 @@ TEXTURES_PATH = [
         "scores.png",
         "crown.png",
         "areyousure.png",
+        "music_on.png",
+        "music_off.png",
 
         "sprit_lives.png",
         "sprit_ghost1.png",

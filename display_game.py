@@ -92,12 +92,20 @@ class DisplayGame(BaseDisplay):
         s_time = f"{round(self.engine.time_left, 2)}"
         self.draw_text(s_time, self.midxy[0] + 30, self.midxy[1] * 2 - 105, len(s_time) * 20, 50, self.font1, "white")
 
-        col = self.player.lives - 1
-        row = 0
-        w, h = 150, 300
-        src = s2.SDL_Rect(col * w, row * h, w, h)
-        dst = s2.SDL_Rect(int(self.midxy[0] / 6) + 40, 135, 100, 130)
-        s2.SDL_RenderCopy(self.renderer, self.t['sprit_lives'], src, dst)
+        if self.player.lives < 4:
+            col = self.player.lives - 1
+            row = 0
+            w, h = 150, 300
+            src = s2.SDL_Rect(col * w, row * h, w, h)
+            dst = s2.SDL_Rect(int(self.midxy[0] / 6) + 40, 135, 100, 130)
+            s2.SDL_RenderCopy(self.renderer, self.t['sprit_lives'], src, dst)
+        else:
+            self.draw_text(
+                    f"{self.player.lives}",
+                    int(self.midxy[0] / 6) + 40, 135, 100, 130,
+                    self.font1,
+                    "purple"
+            )
 
     def rotate_all_sprits(self) -> None:
         if self.sprits_rate == 0:
@@ -187,18 +195,18 @@ class DisplayGame(BaseDisplay):
         if self.player.next_direction != Direction.NONE:
             self.engine.update(self.delta_time)
             if level != self.engine.current_level:
-                self.init_engine()
+                self.init_engine(self.engine.current_level)
         if self.player.lives != lives:
             channel = s2_mix.Mix_PlayChannel(-1, self.sounds["left_life_sound"], 0)
-        player_distx_0 = (self.cell * self.player.xf + self.cell / 2)
-        player_disty_0 = (self.cell * self.player.yf + self.cell / 2)
 
         if self.pov_rpg:
+            player_distx_0 = (self.cell * self.player.xf + self.cell / 2)
+            player_disty_0 = (self.cell * self.player.yf + self.cell / 2)
             startx = int(self.midxy[0] - player_distx_0)
             starty = int(self.midxy[1] - player_disty_0)
             posy = starty
         else:
-            startx = int(self.midxy[0] - self.cell * len(self.maze) / 2)
+            startx = int(self.midxy[0] - len(self.maze[0]) / 2 * self.cell)
             starty = 90
             posy = starty
 
