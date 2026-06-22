@@ -1,6 +1,6 @@
 ARGS= config.json
-PROGRAM= pac-man.py
-MFILE= student
+PROGRAM= src/pac-man.py
+MFILE= src
 TRACE= .install_trace
 PYTHON= uv run python
 LINT_EXCLUDES= uv_lock,.venv
@@ -27,11 +27,15 @@ debug :
 clean :
 	$(RM) -r __pycache__
 	$(RM) -r $(MFILE)/__pycache__
+	$(RM) -r $(MFILE)/*/__pycache__
+	$(RM) -r $(MFILE)/*/*/__pycache__
 	$(RM) -r .mypy_cache
 
 fclean :
 	$(RM) -r __pycache__
 	$(RM) -r $(MFILE)/__pycache__
+	$(RM) -r $(MFILE)/*/__pycache__
+	$(RM) -r $(MFILE)/*/*/__pycache__
 	$(RM) -r .mypy_cache
 	$(RM) .install_trace
 	$(RM) -r .venv
