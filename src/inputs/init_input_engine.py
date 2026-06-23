@@ -18,25 +18,34 @@ from display.display import Display
 
 
 class D(IntEnum):  # DEFAULT
-    """  """
-    # TODO
+    """
+    Default configuration constants for the game window.
+    Defines the initial width (w) and height (h) in pixels.
+    """
 
     w = 1600
     h = 1300
 
 
 class InputError(Exception):
-    """  """
-    # TODO
+    """
+    Custom exception raised when an SDL2 subsystem, window, or renderer 
+    fails to initialize properly.
+    """
     pass
 
 
 class InitInputEngine:
-    """  """
-    # TODO
+    """
+    Bootstraps the game environment.
+    Initializes the GameEngine, loads SDL2 libraries (fonts, mixer, textures),
+    creates the application window, and links everything to the Display facade.
+    Handles graceful degradation
+    """
 
     def __init__(self, path: str) -> None:
-        """  """  # TODO
+        """
+        Initializes the setup engine with basic configurations."""
 
         self.fps_limit = 16  # 1000 ms / 60 frames = 16.666 fps
         self.midxy: list[int] = [int(D.w / 2), int(D.h / 2)]
@@ -49,6 +58,11 @@ class InitInputEngine:
         self.text_mode = False
 
     def init_game(self) -> None:
+        """
+        The main initialization sequence.
+        Starts SDL2, TTF, and Mixer. Loads custom fonts and audio chunks.
+        Creates the main resizable window and the hardware-accelerated
+        renderer"""
 
         check = s2.SDL_Init(s2.SDL_INIT_VIDEO | s2.SDL_INIT_AUDIO)
         if check != 0:
@@ -140,6 +154,9 @@ class InitInputEngine:
             raise
 
     def set_cell_size(self, w: int, h: int) -> None:
+        """
+        Dynamically calculates the pixel size of each grid cell based on the
+        current window dimensions and the maze size."""
         pad = 250
         ref_x = int((w - pad) / len(self.d.maze[0]))
         ref_w = int((h - pad) / len(self.d.maze))
@@ -155,6 +172,10 @@ class InitInputEngine:
             self.d.pov_rpg = False
 
     def free_all(self) -> None:
+        """
+        Safely destroys all SDL2 resources (textures, renderer, fonts, audio)
+        to prevent memory leaks upon exiting the game.
+        """
         self.close_fonts()
         self.textures.destroy_all()
         s2.SDL_DestroyRenderer(self.renderer)
@@ -164,6 +185,10 @@ class InitInputEngine:
         self.end_safe = True
 
     def close_fonts(self) -> None:
+        """
+        Helper method to close all loaded TTF fonts and shut down the 
+        SDL_ttf subsystem cleanly.
+        """
         s2_ttf.TTF_CloseFont(self.font1)
         s2_ttf.TTF_CloseFont(self.font2)
         s2_ttf.TTF_CloseFont(self.font3)

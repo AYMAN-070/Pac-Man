@@ -6,6 +6,11 @@ from display.display_base import BaseDisplay
 
 
 class DisplayUI(BaseDisplay):
+    """
+    Manages and renders the game's User Interface.
+    Inherits from BaseDisplay to utilize the renderer, textures, fonts,
+    and common text-drawing utilities.
+    """
 
     rotasprit: float | int
     rotadeath: float | int
@@ -13,6 +18,11 @@ class DisplayUI(BaseDisplay):
     i: int
 
     def draw_background(self) -> None:
+        """
+        Draws the animated background for the UI screens.
+        Dynamically scales the background to fit the window's aspect ratio
+        and rotates a background item (like a pattern or logo) over time.
+        """
 
         if self.midxy[0] / self.midxy[1] < 16 / 9:
             backh = int((self.midxy[1] + 1) * 2)
@@ -38,6 +48,10 @@ class DisplayUI(BaseDisplay):
             self.rotadeath = 0.1
 
     def display_menu(self) -> None:
+        """
+        Renders the Main Menu screen containing the title and the primary
+        navigation buttons (New Game, Scores, Instructions, Exit).
+        """
         s2.SDL_RenderClear(self.renderer)
 
         jump = 350
@@ -70,6 +84,10 @@ class DisplayUI(BaseDisplay):
         s2.SDL_RenderPresent(self.renderer)
 
     def draw_return_menu(self) -> None:
+        """
+        Draws the 'Return to Menu' button/icon, typically placed in the
+        top-left corner of sub-menus (Instructions, Scores, Pause).
+        """
 
         scalex = int(self.midxy[0] / 10)
         scaley = int(self.midxy[1] / 10)
@@ -77,6 +95,10 @@ class DisplayUI(BaseDisplay):
         s2.SDL_RenderCopy(self.renderer, self.t["return_menu"], None, dst)
 
     def draw_music_status(self) -> None:
+        """
+        Draws the music toggle icon (Speaker ON or OFF) in the bottom-left
+        corner based on the current audio state.
+        """
         dst = s2.SDL_Rect(25, self.midxy[1] * 2 - 175, 150, 150)
         if self.s.music_off:
             s2.SDL_RenderCopy(self.renderer, self.t["music_off"], None, dst)
@@ -84,6 +106,10 @@ class DisplayUI(BaseDisplay):
             s2.SDL_RenderCopy(self.renderer, self.t["music_on"], None, dst)
 
     def display_escape(self) -> None:
+        """
+        Renders the Pause/Escape menu overlaid on top of a dark background.
+        Displays a ghost icon, a resume button, and navigation options.
+        """
 
         s2.SDL_RenderClear(self.renderer)
         s2.SDL_SetTextureColorMod(self.t['sprit_ghost1'], 65, 50, 80)
@@ -117,6 +143,10 @@ class DisplayUI(BaseDisplay):
         s2.SDL_RenderPresent(self.renderer)
 
     def display_instructions(self) -> None:
+        """
+        Renders the game instructions screen over the animated background.
+        Displays the controls and rules image.
+        """
 
         s2.SDL_RenderClear(self.renderer)
         self.draw_background()
@@ -139,6 +169,11 @@ class DisplayUI(BaseDisplay):
         s2.SDL_RenderPresent(self.renderer)
 
     def display_scores(self) -> None:
+        """
+        Renders the High Scores leaderboard.
+        Iterates through the top 10 scores, assigning random colors to text 
+        and placing a crown icon next to the top player.
+        """
 
         s2.SDL_RenderClear(self.renderer)
         self.draw_background()
@@ -193,6 +228,10 @@ class DisplayUI(BaseDisplay):
         s2.SDL_RenderPresent(self.renderer)
 
     def display_confirm_quit(self) -> None:
+        """
+        Renders a confirmation prompt ('Are you sure?') when the user 
+        attempts to quit the game or return to menu during gameplay.
+        """
 
         s2.SDL_RenderClear(self.renderer)
 
@@ -214,6 +253,9 @@ class DisplayUI(BaseDisplay):
         s2.SDL_RenderPresent(self.renderer)
 
     def get_str_sizes(self, data: str) -> tuple[int, int]:
+        """
+        Calculates the appropriate dynamic dimensions (width and height) 
+        for rendering a given text string, ensuring it fits on the screen."""
 
         s_data = f"{data}"
         if data:
@@ -226,6 +268,12 @@ class DisplayUI(BaseDisplay):
         return (int(w), int(c_size))
 
     def display_end(self) -> None:
+        """
+        Renders the Game Over / Victory screen.
+        Handles the visual counting animation of the final score and
+        displays a text input field for the player to enter their name
+        for the high scores list. Provides feedback for invalid inputs.
+        """
 
         s2.SDL_RenderClear(self.renderer)
 

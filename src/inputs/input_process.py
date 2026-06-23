@@ -13,8 +13,14 @@ from inputs.init_input_engine import InitInputEngine
 
 
 class InputProcesses(InitInputEngine):
+    """
+    Processes raw SDL2 events and translates them into game actions.
+    Inherits from InitInputEngine to access the game engine, 
+    display coordinates, and sound manager."""
 
     def cheat_codes(self) -> str:
+        """Parses text input commands entered by the user during gameplay.
+        Activates invincibility & speed boost, or skips to the next level."""
         match self.d.text:
             case "/cheat":
                 self.text_mode = False
@@ -27,6 +33,10 @@ class InputProcesses(InitInputEngine):
         return ""
 
     def newgame_keys(self, event: Any) -> str:
+        """
+        Handles keyboard inputs during active gameplay.
+        Processes directional movement (WASD/Arrows), opening the pause menu,
+        and initiating the text input mode for cheat codes."""
 
         match event.key.keysym.sym:
             case s2.SDLK_UP | s2.SDLK_w:
@@ -58,6 +68,8 @@ class InputProcesses(InitInputEngine):
         return ""
 
     def menu_mouse(self, event: Any) -> str:
+        """
+        Handles mouse clicks on the Main Menu screen."""
 
         if event.button.button == s2.SDL_BUTTON_LEFT:
             act = self.check_button(
@@ -68,6 +80,9 @@ class InputProcesses(InitInputEngine):
         return ""
 
     def get_menu_buttons(self) -> dict[str, Any]:
+        """
+        Calculates the bounding boxes (Left-Up to Right-Down coordinates) 
+        for all buttons on the Main Menu dynamically based on screen size."""
         data = dict()
 
         jump = 350
@@ -101,6 +116,9 @@ class InputProcesses(InitInputEngine):
         return data
 
     def check_button(self, x: int, y: int) -> str:
+        """
+        Checks if a given (x, y) coordinate falls within any of the main menu 
+        button hitboxes or the music toggle button."""
         button = self.get_menu_buttons()
         self.set_music_off(x, y)
         for option in button.keys():
@@ -110,6 +128,9 @@ class InputProcesses(InitInputEngine):
         return ""
 
     def set_music_off(self, x: int, y: int) -> str:
+        """
+        Toggles the background music state if the coordinates fall within
+        the music icon's bounding box."""
         lux = 25
         luy = self.midxy[1] * 2 - 175
         size = 150
@@ -122,6 +143,8 @@ class InputProcesses(InitInputEngine):
         return ""
 
     def return_menu(self, event: Any) -> str:
+        """
+        Checks if the 'Return to Menu' button (top-left corner) was clicked."""
 
         size = 190
         ypad = 90
@@ -133,6 +156,9 @@ class InputProcesses(InitInputEngine):
         return ""
 
     def escape_mouse(self, event: Any) -> str:
+        """
+        Handles mouse clicks on the Pause/Escape screen.
+        Can resume the game, toggle music, or attempt to return to the menu."""
         self.set_music_off(event.button.x, event.button.y)
         if event.button.button == s2.SDL_BUTTON_LEFT:
             size = 600
@@ -149,6 +175,8 @@ class InputProcesses(InitInputEngine):
         return ""
 
     def instructions_mouse(self, event: Any) -> str:
+        """
+        Handles mouse clicks on the Instructions screen."""
 
         if event.button.button == s2.SDL_BUTTON_LEFT:
             ret = self.return_menu(event)
@@ -157,6 +185,9 @@ class InputProcesses(InitInputEngine):
         return ""
 
     def confirm_quit_mouse(self, event: Any) -> str:
+        """
+        Handles mouse clicks on the 'Are You Sure?' confirmation dialog.
+        Saves the high score if the player is quitting an active game."""
 
         if event.button.button == s2.SDL_BUTTON_LEFT:
 
@@ -184,9 +215,17 @@ class InputProcesses(InitInputEngine):
         return ""
 
     def end_mouse(self, event: Any) -> str:
+        """
+        Handles mouse clicks on the Game Over / Victory screen.
+        (Currently unused, reserved for future UI additions).
+        """
         return ""
 
     def end_keys(self, event: Any) -> str:
+        """
+        Handles keyboard inputs on the Game Over / Victory screen,
+        specifically for entering the player's name
+        into the high score list."""
 
         match event.key.keysym.sym:
             case s2.SDLK_BACKSPACE:

@@ -6,7 +6,7 @@ from pathlib import Path
 
 
 class TextureError(Exception):
-    """  """  # TODO
+    """Custom exception raised when an image or texture fails to load."""
     pass
 
 
@@ -50,15 +50,22 @@ TEXTURES_PATH = [
 
 
 class Textures:
-    """  """  # TODO
+    """
+    Manages all visual assets (textures) for the game.
+    Responsible for loading image files, converting them into SDL2 textures
+    """
 
     def __init__(self, renderer: Any) -> None:
-        """  """  # TODO
+        """
+        Initializes the Textures manager """
         self.all: dict[str, Any] = dict()
         self.renderer = renderer
 
     def load_textures(self) -> dict[str, Any]:
-        """  """  # TODO
+        """
+        Loads all predefined image files from TEXTURES_PATH.
+        If any texture fails to load, it safely destroys all previously loaded
+        textures to prevent memory leaks before propagating the error """
         try:
             for path in TEXTURES_PATH[1:]:
                 self.create_texture(TEXTURES_PATH[0] + path)
@@ -68,12 +75,17 @@ class Textures:
         return self.all
 
     def destroy_all(self) -> None:
-        """  """  # TODO
+        """
+        Safely destroys all loaded SDL2 textures and frees their memory
+        Should be called before closing the game engine to prevent leaks
+        """
         for key, elem in self.all.items():
             s2.SDL_DestroyTexture(elem)
 
     def create_texture(self, path: str) -> None:
-        """  """  # TODO
+        """ Loads a single image from the specified path,
+        creates an SDL2 texture from its surface,
+        and stores it in the `self.all` dictionary. """
         image = s2_img.load_img(path)
         if not image:
             raise TextureError(f"can't load : {path}")

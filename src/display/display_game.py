@@ -10,6 +10,9 @@ from display.display_base import BaseDisplay
 
 
 class DisplayGame(BaseDisplay):
+    """
+    Renders the active gameplay screen and synchronizes visual updates 
+    with the underlying GameEngine."""
 
     rotasprit: float | int
     sprits_rate: float
@@ -23,13 +26,18 @@ class DisplayGame(BaseDisplay):
     # i: int
 
     def draw_cell(self, cell: str, x: int, y: int) -> None:
-        """  """  # TODO
+        """
+        Renders a static maze cell (wall, pacgum, megapacgum)
+        at the given coordinates. """
 
         dst = s2.SDL_Rect(x, y, self.cell, self.cell)
         s2.SDL_RenderCopy(self.renderer, self.t[cell], None, dst)
 
     def draw_pacman(self, padx: int, pady: int) -> None:
-        """  """  # TODO
+        """
+        Renders the Pac-Man sprite based on his current direction
+        and animation frame. Also switches to a special texture
+        if the invincibility cheat is active. """
         if self.engine.cheat_invincible:
             skin = "sprit_pacman_cheat"
         else:
@@ -61,7 +69,9 @@ class DisplayGame(BaseDisplay):
         s2.SDL_RenderCopy(self.renderer, self.t[skin], src, dst)
 
     def draw_ghosts(self, padx: int, pady: int) -> None:
-        """  """  # TODO
+        """
+        Renders all active ghosts. Applies color modulations (flashing)
+        if the ghosts are in the EDIBLE state.  """
 
         for i, ghost in enumerate(self.ghosts):
             if not ghost.state == GhostState.DEAD:
@@ -92,7 +102,9 @@ class DisplayGame(BaseDisplay):
                 s2.SDL_RenderCopy(self.renderer, self.t[color], src, dst)
 
     def draw_infos(self) -> None:
-        """  """  # TODO
+        """
+        Renders the Heads-Up Display (HUD) including the current score,
+        remaining lives, level number, and countdown timer.  """
 
         s_score = f"{self.engine.score}"
         self.draw_text(s_score, self.midxy[0] - 20, 15, len(s_score) * 20,
@@ -135,6 +147,9 @@ class DisplayGame(BaseDisplay):
             )
 
     def rotate_all_sprits(self) -> None:
+        """
+        Updates the animation frames for Pac-Man and all ghosts, creating
+        the illusion of movement by cycling through sprite sheet columns."""
         if self.sprits_rate == 0:
             for ghost in self.ghosts:
                 ghost.rotasprit = (ghost.rotasprit + 1) % 5
@@ -151,6 +166,9 @@ class DisplayGame(BaseDisplay):
         self.xyf[1] = self.player.yf
 
     def game_over_process(self, padx: int, pady: int) -> str:
+        """
+        Plays the Game Over death animation and sound, blocking further input
+        until the sequence is finished."""
 
         self.sprits_rate -= 0.5
         if self.rotadeath < 6.1:
@@ -185,6 +203,9 @@ class DisplayGame(BaseDisplay):
         return ""
 
     def game_win_process(self, padx: int, pady: int) -> str:
+        """
+        Plays the Victory animation and sound upon successfully completing
+        all levels. Blocks input during the sequence."""
 
         self.sprits_rate -= 0.5
         if self.rotadeath < 4.1:
@@ -221,7 +242,11 @@ class DisplayGame(BaseDisplay):
         return ""
 
     def display_and_compute_game(self) -> str:
-        """  """  # TODO
+        """
+        The main rendering loop iteration. Clears the screen, updates the game
+        engine, manages camera movements (RPG mode or screen shake),
+        draws all entities (maze, player, ghosts, HUD),
+        and presents the final frame.  """
 
         s2.SDL_RenderClear(self.renderer)
 

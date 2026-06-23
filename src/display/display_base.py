@@ -9,17 +9,21 @@ from display.helpers.sounds import Sounds
 
 
 class DiplayError(Exception):
-    """  """   # TODO
+    """Custom exception raised for critical rendering or display errors."""
     pass
 
 
 class BaseDisplay:
-    """  """   # TODO
+    """
+    Base class for rendering the game interface and entities.
+    Holds references to the game engine, textures, sounds, and fonts
+    """
 
     def __init__(self, engine: GameEngine, fps_limit: int,
                  renderer: Any, sounds: Sounds, textures: dict[str, Any],
                  font1: Any, font2: Any, font3: Any, midxy: list[int]) -> None:
-        """  """  # TODO
+        """
+        Initializes the base display components.  """
         self.engine = engine
         self.start = False
         self.s = sounds
@@ -85,8 +89,9 @@ class BaseDisplay:
         ]
 
     def init_engine(self, level: int) -> None:
-        """  """
-        #  TODO
+        """
+        Resets and synchronizes the display variables with the current state
+        of the game engine when a new level or attempt starts.  """
         self.start = False
         self.i = 0
         self.maze = self.engine.maze.grid
@@ -111,6 +116,7 @@ class BaseDisplay:
                   w: int, h: int,
                   font: Any,
                   color: str) -> None:
+        """Renders a given text string to the screen."""
 
         surface = s2_ttf.TTF_RenderText_Solid(font, string.encode('utf-8'),
                                               self.txt_color[color])

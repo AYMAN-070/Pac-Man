@@ -14,6 +14,10 @@ from inputs.init_input_engine import InitInputEngine
 
 
 def limit_fps(start_frame: int, limit: int) -> None:
+    """
+    Limits the frame rate to ensure the game runs at a consistent speed.
+    Delays the execution if the frame was rendered
+    faster than the target time."""
     ticks = s2.SDL_GetTicks()
 
     if start_frame + limit > ticks:
@@ -22,13 +26,26 @@ def limit_fps(start_frame: int, limit: int) -> None:
 
 
 def void_func(*args: Any, **kwargs: Any) -> str:
+    """
+    A placeholder/dummy function used to ignore specific
+    inputs in certain states.
+    For example, ignoring keyboard inputs while in the menu."""
     return ""
 
 
 class SDLCoreEngine(InitInputEngine):
-    """  """  # TODO
+    """
+    The core engine responsible for running the game loop and state machine.
+    Inherits initialized SDL2 components from InitInputEngine and orchestrates
+    the transitions between the menu, gameplay, pause, and end screens.
+    """
 
     def process_core_while(self) -> None:
+        """
+        The main state machine of the game.
+        Loops indefinitely until the 'exit' command is received. It sets up 
+        the appropriate input handlers, display functions, and background music 
+        for the current state"""
         game = True
 
         res = "menu"
@@ -105,6 +122,9 @@ class SDLCoreEngine(InitInputEngine):
                 keydown: Callable[..., str],
                 display:  Callable[..., str]
                 ) -> str:
+        """
+        The frame-by-frame execution loop for the current game state.
+        Polls for SDL2 events (window resize, quit, mouse, keyboard, text)"""
 
         game = True
 

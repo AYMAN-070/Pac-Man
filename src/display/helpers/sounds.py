@@ -17,11 +17,14 @@ SOUNDS_PATH = [
 
 
 class SoundsError(Exception):
+    """Custom exception raised when a sound fails to load"""
     pass
 
 
 class Sounds:
-
+    """
+    Manages game audio, including sound effects and background music
+    """
     def __init__(self) -> None:
         self.sounds: dict[str, Any] = dict()
         self.is_active = False
@@ -29,6 +32,9 @@ class Sounds:
         self.music_off = False
 
     def load_sounds(self) -> None:
+        """
+        Loads all WAV files specified in SOUNDS_PATH into memory.
+        The sounds are stored in the self.sounds """
         for elem in SOUNDS_PATH[1:]:
             path = f"{SOUNDS_PATH[0]}{elem}"
             chunk = s2_mix.Mix_LoadWAV(path.encode())
@@ -39,12 +45,18 @@ class Sounds:
         return
 
     def free_all_sounds(self) -> None:
+        """
+        Frees the memory allocated for all loaded sound chunks and
+        properly shuts down the SDL2 mixer audio subsystem.
+        """
         for key, elem in self.sounds.items():
             s2_mix.Mix_FreeChunk(elem)
         s2_mix.Mix_CloseAudio()
         s2_mix.Mix_Quit()
 
     def set_background_sound(self, name: str, loop: int = -1) -> None:
+        """
+        Plays or resumes a specific background sound/music"""
         if not self.is_active:
             self.channel = s2_mix.Mix_PlayChannel(-1, self.sounds[name], loop)
             self.active = name
@@ -59,15 +71,25 @@ class Sounds:
             self.halt_background_sound()
 
     def halt_background_sound(self) -> None:
+        """
+        Pauses the currently playing background sound channel
+        The sound can be resumed later
+        """
         if self.active:
             s2_mix.Mix_Pause(self.channel)
 
     def stop_background_sound(self) -> None:
+        """
+        Completely stops the currently playing background sound channel
+        and resets the active playback state.
+        """
         if self.active:
             s2_mix.Mix_HaltChannel(self.channel)
             self.is_active = False
 
     def music_off_background_sound(self, mode: bool) -> None:
+        """
+        Toggles the global background music state (muted or unmuted)."""
         self.music_off = mode
         if self.is_active:
             if mode:
