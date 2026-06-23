@@ -2,7 +2,7 @@
 
 
 a = Analysis(
-    ['pac-man.py'],
+    ['src/pac-man.py'],
     pathex=[],
     binaries=[],
     datas=[('config.json', '.')],
