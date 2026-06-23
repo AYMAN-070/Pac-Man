@@ -31,9 +31,9 @@ class BaseDisplay:
 
         self.init_engine(self.engine.current_level)
 
-        self.rotasprit = 1
-        self.rotadeath = -0.1
-        self.n_rotasprit = 4
+        self.rotasprit: float | int = 1
+        self.rotadeath: float | int = -0.1
+        self.n_rotasprit: float | int = 4
         self.sprits_rate = 0
         self.time = time.time()
         self.end = False
@@ -84,7 +84,7 @@ class BaseDisplay:
                         "purple",
         ]
 
-    def init_engine(self, level: int):
+    def init_engine(self, level: int) -> None:
         """  """
         #  TODO
         self.start = False

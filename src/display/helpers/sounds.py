@@ -1,7 +1,7 @@
 
 import sdl2.sdlmixer as s2_mix
 from pathlib import Path
-
+from typing import Any
 
 SOUNDS_PATH = [
         "assets/",
@@ -23,7 +23,7 @@ class SoundsError(Exception):
 class Sounds:
 
     def __init__(self) -> None:
-        self.sounds = dict()
+        self.sounds: dict[str, Any] = dict()
         self.is_active = False
         self.active: str = ""
         self.music_off = False

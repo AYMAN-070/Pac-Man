@@ -1,6 +1,7 @@
 
 import sys
 from enum import IntEnum
+from typing import Any
 try:
     import sdl2 as s2
     import sdl2.sdlttf as s2_ttf
@@ -20,8 +21,8 @@ class D(IntEnum):  # DEFAULT
     """  """
     # TODO
 
-    w: int = 1600
-    h: int = 1300
+    w = 1600
+    h = 1300
 
 
 class InputError(Exception):
@@ -37,15 +38,17 @@ class InitInputEngine:
     def __init__(self, path: str) -> None:
         """  """  # TODO
 
-        self.fps_limit = 16  #  1000 / 60 ~ fps
+        self.fps_limit = 16  # 1000 ms / 60 frames = 16.666 fps
         self.midxy: list[int] = [int(D.w / 2), int(D.h / 2)]
         self.config_path = path
         self.engine = GameEngine(path)
-        self.sounds = dict()
+        self.sounds: dict[str, Any] = dict()
         self.s = Sounds()
         self.player = self.engine.player
         self.previous = ""
         self.text_mode = False
+
+    def init_game(self) -> None:
 
         check = s2.SDL_Init(s2.SDL_INIT_VIDEO | s2.SDL_INIT_AUDIO)
         if check != 0:
@@ -158,6 +161,7 @@ class InitInputEngine:
         s2.SDL_DestroyWindow(self.window)
         self.s.free_all_sounds()
         s2.SDL_Quit()
+        self.end_safe = True
 
     def close_fonts(self) -> None:
         s2_ttf.TTF_CloseFont(self.font1)

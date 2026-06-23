@@ -94,7 +94,7 @@ class Maze:
 
     def pattern_42(self) -> None:
         """Reserve pattern 42 coordinates so that it is not sculpted."""
-        self.pattern = set()
+        self.pattern: set[tuple[int, int]] = set()
         if self.height < 10 or self.width < 10:
             print("Warning: Maze size too small to draw the 42 pattern")
             return
@@ -140,7 +140,7 @@ class Maze:
         self.carve_center()
 
     def _get_reachable_cells(self, start_x: int, start_y: int,
-                             width: int, height: int) -> set:
+                             width: int, height: int) -> None:
         """
         find all reachable cases from the begining """
         self.reachable = set()
