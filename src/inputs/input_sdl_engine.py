@@ -43,8 +43,8 @@ class SDLCoreEngine(InitInputEngine):
     def process_core_while(self) -> None:
         """
         The main state machine of the game.
-        Loops indefinitely until the 'exit' command is received. It sets up 
-        the appropriate input handlers, display functions, and background music 
+        Loops indefinitely until the 'exit' command is received. It sets up
+        the appropriate input handlers, display functions, and background music
         for the current state"""
         game = True
 

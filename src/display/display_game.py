@@ -11,7 +11,7 @@ from display.display_base import BaseDisplay
 
 class DisplayGame(BaseDisplay):
     """
-    Renders the active gameplay screen and synchronizes visual updates 
+    Renders the active gameplay screen and synchronizes visual updates
     with the underlying GameEngine."""
 
     rotasprit: float | int

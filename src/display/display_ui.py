@@ -171,7 +171,7 @@ class DisplayUI(BaseDisplay):
     def display_scores(self) -> None:
         """
         Renders the High Scores leaderboard.
-        Iterates through the top 10 scores, assigning random colors to text 
+        Iterates through the top 10 scores, assigning random colors to text
         and placing a crown icon next to the top player.
         """
 
@@ -229,7 +229,7 @@ class DisplayUI(BaseDisplay):
 
     def display_confirm_quit(self) -> None:
         """
-        Renders a confirmation prompt ('Are you sure?') when the user 
+        Renders a confirmation prompt ('Are you sure?') when the user
         attempts to quit the game or return to menu during gameplay.
         """
 
@@ -254,7 +254,7 @@ class DisplayUI(BaseDisplay):
 
     def get_str_sizes(self, data: str) -> tuple[int, int]:
         """
-        Calculates the appropriate dynamic dimensions (width and height) 
+        Calculates the appropriate dynamic dimensions (width and height)
         for rendering a given text string, ensuring it fits on the screen."""
 
         s_data = f"{data}"

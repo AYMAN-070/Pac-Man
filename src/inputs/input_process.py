@@ -15,7 +15,7 @@ from inputs.init_input_engine import InitInputEngine
 class InputProcesses(InitInputEngine):
     """
     Processes raw SDL2 events and translates them into game actions.
-    Inherits from InitInputEngine to access the game engine, 
+    Inherits from InitInputEngine to access the game engine,
     display coordinates, and sound manager."""
 
     def cheat_codes(self) -> str:
@@ -81,7 +81,7 @@ class InputProcesses(InitInputEngine):
 
     def get_menu_buttons(self) -> dict[str, Any]:
         """
-        Calculates the bounding boxes (Left-Up to Right-Down coordinates) 
+        Calculates the bounding boxes (Left-Up to Right-Down coordinates)
         for all buttons on the Main Menu dynamically based on screen size."""
         data = dict()
 
@@ -117,7 +117,7 @@ class InputProcesses(InitInputEngine):
 
     def check_button(self, x: int, y: int) -> str:
         """
-        Checks if a given (x, y) coordinate falls within any of the main menu 
+        Checks if a given (x, y) coordinate falls within any of the main menu
         button hitboxes or the music toggle button."""
         button = self.get_menu_buttons()
         self.set_music_off(x, y)

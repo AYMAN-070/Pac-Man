@@ -29,7 +29,7 @@ class D(IntEnum):  # DEFAULT
 
 class InputError(Exception):
     """
-    Custom exception raised when an SDL2 subsystem, window, or renderer 
+    Custom exception raised when an SDL2 subsystem, window, or renderer
     fails to initialize properly.
     """
     pass
@@ -186,7 +186,7 @@ class InitInputEngine:
 
     def close_fonts(self) -> None:
         """
-        Helper method to close all loaded TTF fonts and shut down the 
+        Helper method to close all loaded TTF fonts and shut down the
         SDL_ttf subsystem cleanly.
         """
         s2_ttf.TTF_CloseFont(self.font1)
