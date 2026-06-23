@@ -23,26 +23,31 @@ class DisplayGame(BaseDisplay):
 
     def draw_pacman(self, padx: int, pady: int) -> None:
         """  """ #  TODO
+        if self.engine.cheat_invincible:
+            skin = "sprit_pacman_cheat"
+        else:
+            skin = "sprit_pacman"
         match self.player.next_direction:
             case Direction.UP:
-                row = 0
+                self.row = 0
             case Direction.LEFT:
-                row = 2
+                self.row = 2
             case Direction.RIGHT:
-                row = 3
+                self.row = 3
             case Direction.DOWN:
-                row = 1
+                self.row = 1
             case _:
+                col = self.rotasprit
                 w, h = 250, 250
-                src = s2.SDL_Rect(2 * w, 3 * h, w, h)
+                src = s2.SDL_Rect(2 * w, self.row * h, w, h)
                 dst = s2.SDL_Rect(int(self.player.xf * self.cell + padx), int(self.player.yf * self.cell + pady), self.cell, self.cell)
-                s2.SDL_RenderCopy(self.renderer, self.t["sprit_pacman"], src, dst)
+                s2.SDL_RenderCopy(self.renderer, self.t[skin], src, dst)
                 return
         col = self.rotasprit
         w, h = 250, 250
-        src = s2.SDL_Rect(col * w, row * h, w, h)
+        src = s2.SDL_Rect(col * w, self.row * h, w, h)
         dst = s2.SDL_Rect(int(self.player.xf * self.cell + padx), int(self.player.yf * self.cell + pady), self.cell, self.cell)
-        s2.SDL_RenderCopy(self.renderer, self.t["sprit_pacman"], src, dst)
+        s2.SDL_RenderCopy(self.renderer, self.t[skin], src, dst)
 
     def draw_ghosts(self, padx: int, pady: int) -> None:
         """  """ #  TODO
@@ -60,7 +65,10 @@ class DisplayGame(BaseDisplay):
                     case _:
                         row = 1
                 if ghost.state == GhostState.EDIBLE:
-                    s2.SDL_SetTextureColorMod(self.t[color], 110, 80, 220)
+                    if ghost.timer <= 2 and self.rotasprit > 3:
+                        s2.SDL_SetTextureColorMod(self.t[color], 198, 120, 235)
+                    else: 
+                        s2.SDL_SetTextureColorMod(self.t[color], 110, 80, 220)
                 else:
                     s2.SDL_SetTextureColorMod(self.t[color], 255, 255, 255)
 
@@ -89,6 +97,8 @@ class DisplayGame(BaseDisplay):
 
         dst = s2.SDL_Rect(self.midxy[0] - 400, self.midxy[1] * 2 - 150, 420, 140)        
         s2.SDL_RenderCopy(self.renderer, self.t["time"], None, dst)
+        if self.engine.time_left < 0:
+            self.engine.time_left = 0
         s_time = f"{round(self.engine.time_left, 2)}"
         self.draw_text(s_time, self.midxy[0] + 30, self.midxy[1] * 2 - 105, len(s_time) * 20, 50, self.font1, "white")
 
@@ -117,6 +127,11 @@ class DisplayGame(BaseDisplay):
             self.rotasprit = abs(self.n_rotasprit)
 
         self.sprits_rate = (self.sprits_rate + 1) % 5
+
+        if self.player.xf == self.xyf[0] and self.player.yf == self.xyf[1]:
+            self.player.next_direction = Direction.NONE
+        self.xyf[0] = self.player.xf
+        self.xyf[1] = self.player.yf
 
     def game_over_process(self, padx: int, pady: int) -> str:
 
@@ -195,10 +210,11 @@ class DisplayGame(BaseDisplay):
         lives = self.player.lives
         level = self.engine.current_level
         if self.shake_death == 0:
-            if self.player.next_direction != Direction.NONE:
+            if self.start:
                 self.engine.update(self.delta_time)
                 if level != self.engine.current_level:
                     self.init_engine(self.engine.current_level)
+                    return "reload"
         else:
             if self.midxy[0] <= self.shake_death:
                 self.midxy[0] -= 2
@@ -212,6 +228,7 @@ class DisplayGame(BaseDisplay):
                 self.shake_death = 0
 
         if self.player.lives != lives:
+            self.start = False
             self.shake_death = self.midxy[0]
             channel = s2_mix.Mix_PlayChannel(-1, self.sounds["left_life_sound"], 0)
 

@@ -60,7 +60,7 @@ class SDLCoreEngine(InitInputEngine):
                     display
                     )
             if res == "confirm_quit":
-                if self.previous not in {"menu", "escape"}:
+                if self.previous not in {"menu", "escape", "end"}:
                     res = "menu"
 
             self.text_mode = False
@@ -107,7 +107,6 @@ class SDLCoreEngine(InitInputEngine):
                     key_event = lambda *args: None
                     display = self.d.display_confirm_quit
                 case "end":
-                    self.d.i = 0
                     self.d.text = ""
                     self.text_mode = True
                     mouse_event = self.end_mouse

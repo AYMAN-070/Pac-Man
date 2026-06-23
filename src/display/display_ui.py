@@ -92,9 +92,8 @@ class DisplayUI(BaseDisplay):
         s2.SDL_SetTextureColorMod(self.t['music_on'], 140, 120, 180)
         s2.SDL_SetTextureColorMod(self.t['music_off'], 140, 120, 180)
         
-        size = 50
+        size_cell = int(max(self.midxy[0] * 2, self.midxy[1] * 2) * 2)
 
-        size_cell = self.cell * size
         w, h = 250, 250
         src = s2.SDL_Rect(0 * w, 1 * h, w, h)
 
@@ -193,6 +192,16 @@ class DisplayUI(BaseDisplay):
     def display_confirm_quit(self) -> None:
 
         s2.SDL_RenderClear(self.renderer)
+
+        if self.name:
+            txt = "NAME:  " + self.name
+            if len(txt) >= 19:
+                self.text = self.text[:19]
+                txt = self.text
+            w, c_size = self.get_str_sizes(txt)
+            y = 100 + c_size * 2 + 30
+            if txt:
+                self.draw_text(txt, int(self.midxy[0] - w / 2), y, w, c_size * 3, self.font3, "white")
 
         dst = s2.SDL_Rect(int(self.midxy[0] - 400), self.midxy[1] - 200, 800, 400)
         s2.SDL_RenderCopy(self.renderer, self.t['areyousure'], None, dst)

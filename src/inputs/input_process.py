@@ -22,6 +22,7 @@ class InputEngine(SDLCoreEngine):
         match self.d.text:
             case "/cheat":
                 self.text_mode = False
+                self.player.speed = self.player.speed * 1.5
                 self.engine.toggle_invincibility()
             case "/next":
                 self.text_mode = False
@@ -35,12 +36,20 @@ class InputEngine(SDLCoreEngine):
         match event.key.keysym.sym:
             case s2.SDLK_UP | s2.SDLK_w:
                 self.player.next_direction = Direction.UP
+                if not self.d.start:
+                    self.d.start = True
             case s2.SDLK_RIGHT | s2.SDLK_d:
                 self.player.next_direction = Direction.RIGHT
+                if not self.d.start:
+                    self.d.start = True
             case s2.SDLK_DOWN | s2.SDLK_s:
                 self.player.next_direction = Direction.DOWN
+                if not self.d.start:
+                    self.d.start = True
             case s2.SDLK_LEFT | s2.SDLK_a:
                 self.player.next_direction = Direction.LEFT
+                if not self.d.start:
+                    self.d.start = True
             case s2.SDLK_ESCAPE:
                 return "escape"
             case s2.SDLK_SLASH:
@@ -170,6 +179,9 @@ class InputEngine(SDLCoreEngine):
                     if event.button.x < self.midxy[0] - 110:
                         return self.previous
                     if event.button.x > self.midxy[0] + 110:
+                        if self.d.name:
+                            self.engine.highscore_manager.add_score(self.d.name, self.engine.score)
+                            self.d.name = ""
                         if self.previous == "menu":
                             return "exit"
                         else:
@@ -186,6 +198,6 @@ class InputEngine(SDLCoreEngine):
                 self.d.text = self.d.text[:-1]
             case s2.SDLK_RETURN:
                 if self.d.text and len(self.d.text) <= 10 and self.d.text.isalnum():
-                    self.engine.highscore_manager.add_score(self.d.text, self.engine.score)
-                    return "menu"
+                    self.d.name = self.d.text
+                    return "confirm_quit"
         return ""

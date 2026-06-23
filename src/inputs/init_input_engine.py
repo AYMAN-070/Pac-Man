@@ -37,7 +37,7 @@ class InitInputEngine:
     def __init__(self, path: str) -> None:
         """  """  # TODO
 
-        self.fps_limit = 16  # for 60 / 1000 for fps TODO
+        self.fps_limit = 16  #  1000 / 60 ~ fps
         self.midxy: list[int] = [int(D.w / 2), int(D.h / 2)]
         self.config_path = path
         self.engine = GameEngine(path)
