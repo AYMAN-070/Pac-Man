@@ -124,7 +124,13 @@ class GameEngine:
         Generates the maze and places the player and ghosts for current level.
         """
         base_seed: int = self.config.settings.get("seed", 42)
-        seed = base_seed + self.current_level
+        print(self.current_level, "lvl")
+        if self.current_level == 1:
+            seed = base_seed + self.current_level
+        else:
+            random.seed()
+            seed = random.randint(0, 100000)
+        print(seed)
         levels_config = self.config.settings.get("level",
                                                  [{"width": 21, "height": 21}])
         # SYSTEM de securite si on depasse level max donnee
