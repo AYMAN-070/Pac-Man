@@ -11,9 +11,6 @@ if __name__ == "__main__":
         game.init_game()
         game.process_game()
     except KeyboardInterrupt:
-        try:
-            game.emergency_free_all()
-        except Exception:
-            pass
+        print("program killed from keyboard", file=sys.stderr)
     except Exception as e:
         print(f"fatal error: {e}", file=sys.stderr)
