@@ -1,10 +1,15 @@
 #!/bin/bash
-echo "Début du packaging du jeu Pac-Man..."
 
-# installer pyinstaller if not done
+echo "Starting the Pac-Man game packaging..."
+
+# Install PyInstaller if it is not already installed
 uv pip install pyinstaller
 
-# Use 'python -m PyInstaller'
-uv run python -m PyInstaller --onefile --add-data "config.json:." src/pac-man.py
+# Package the game
+uv run python -m PyInstaller --onedir \
+    --paths "src" \
+    --add-data "config.json:." \
+    --add-data "assets:assets" \
+    src/pac-man.py
 
-echo "Packaging terminé ! L'exécutable se trouve dans le dossier /dist"
+echo "Packaging completed!"

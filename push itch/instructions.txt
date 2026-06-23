@@ -1,0 +1,14 @@
+PAC-MAN - 42 PROJECT
+====================
+
+launch the game with the following command:
+./pac-man/pac-man pac-man/config.json
+
+
+CONTROLS:
+- Use Arrow Keys to move Pac-Man.
+- Press N to cheat and advance to the next level.
+- Press ESC to quit.
+
+CONFIGURATION:
+You can edit the "config.json" file to change the number of lives, the random seed, or the score values.
