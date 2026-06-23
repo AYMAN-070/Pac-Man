@@ -201,6 +201,8 @@ These are designed to let peer reviewers quickly test all game features without 
 - [SDL2 Python bindings (pysdl2)](https://pysdl2.readthedocs.io/)
 - [SDL2 official documentation](https://wiki.libsdl.org/)
 - [SDL keysym reference](https://www.libsdl.org/release/SDL-1.2.15/docs/html/sdlkey.html) — key symbol list, very useful for input handling
+- [Real Pacman game reference](https://freepacman.org/)
+- [FontSpace](https://www.fontspace.com/) — free fonts distributor ; fonts used : [Brookeshappell8](https://www.fontspace.com/brookeshappell8-font-f15898), [Shirtsy](https://www.fontspace.com/shirtsy-font-f7258), [Moon and Latte](https://www.fontspace.com/moon-and-latte-font-f164077)
 
 ### Tools
 - [GIMP](https://www.gimp.org/) — used to create and edit all game graphics and sprites
