@@ -51,7 +51,7 @@ uv run python src/pac-man.py config.json
 |---|---|
 | Arrow keys / WASD | Move Pac-Man |
 | Escape | Pause / open pause menu |
-| `/cheat` + Enter | Toggle invincibility |
+| `/cheat` + Enter | Toggle invincibility + increase player speed (×1.5) |
 | `/next` + Enter | Skip to next level |
 
 ---
@@ -127,6 +127,8 @@ If the external generator fails for any reason, a basic fallback grid (checkerbo
 
 The game runs at a capped framerate (≈60 FPS via `SDL_Delay`). Each frame, SDL2 events are polled, then the appropriate display/compute function is called. Movement and collision resolution happen inside `GameEngine.update(delta_time)`, which is called only when the player has chosen a direction.
 
+The game does not start moving until the player presses a directional key for the first time (`start` flag). This lets the player orient themselves before ghosts begin chasing.
+
 ### Movement system
 
 Both Pac-Man and ghosts use a **rail movement** system (`rail_movements` / `update_pos`): entities move toward a discrete grid destination cell, passing through the center of each cell to ensure clean directional changes. Speed is expressed in cells/frame and excess movement (overshoot) is carried over to the next step.
@@ -168,16 +170,17 @@ src/
 │       ├── textures.py     # SDL2 texture loader
 │       └── sounds.py       # SDL2_mixer sound manager
 └── inputs/
-    ├── init_input_engine.py  # SDL2 init: window, renderer, fonts, sounds, textures
+    ├── init_input_engine.py  # SDL2 safe init: window, renderer, fonts, sounds, textures via init_game()
     ├── input_sdl_engine.py   # Core event loop & state machine (menu → game → end)
-    └── input_process.py      # Key/mouse handlers per game state
+    ├── input_process.py      # Key/mouse handlers per game state
+    └── input_engine.py       # Entry point: ties InputProcesses + SDLCoreEngine together
 ```
 
 ### Key relationships
 
 - `GameEngine` owns `Maze`, `Player`, `List[Ghost]`, `HighscoreManager`, and `GameConfig`. It exposes `update(delta_time)` and `get_state()`.
 - `Display` inherits from both `DisplayGame` and `DisplayUI` (Python multiple inheritance), sharing the base renderer and texture dictionary from `BaseDisplay`.
-- `InputEngine` inherits from `SDLCoreEngine → InitInputEngine`. `InitInputEngine` owns SDL2 resources and `GameEngine`; `SDLCoreEngine` runs the event loop; `InputEngine` provides the per-state key and mouse handlers.
+- `InputEngine` inherits from both `InputProcesses` and `SDLCoreEngine`. `InputProcesses` (inheriting `InitInputEngine`) owns SDL2 resources, `GameEngine`, and all per-state key/mouse handlers. `SDLCoreEngine` runs the core event loop and state machine. `InitInputEngine` handles safe SDL2 initialization and resource cleanup via `init_game()`, with structured try/destroy/free chains.
 - The engine layer has **no dependency** on SDL2 — it can be tested or reused independently.
 
 ---
@@ -188,7 +191,7 @@ Cheat codes are entered via the in-game text input (press `/` to open, then type
 
 | Command | Effect |
 |---|---|
-| `/cheat` | Toggle invincibility (ghosts cannot kill Pac-Man) |
+| `/cheat` | Toggle invincibility (ghosts cannot kill Pac-Man) + increase player speed (×1.5) |
 | `/next` | Immediately skip to the next level |
 
 These are designed to let peer reviewers quickly test all game features without playing through every level.
