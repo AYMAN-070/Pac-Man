@@ -62,11 +62,6 @@ class Sounds:
         if self.active:
             s2_mix.Mix_Pause(self.channel)
 
-    def stop_background_sound(self) -> None:
-        if self.active:
-            s2_mix.Mix_HaltChannel(self.channel)
-            self.is_active = False
-
     def music_off_background_sound(self, mode: bool) -> None:
         self.music_off = mode
         if self.is_active:
