@@ -404,8 +404,11 @@ class GameEngine:
             return
         self.time_left -= delta_time
         if self.time_left <= 0:
-            self.is_game_over = True
-            print("Time's up! Game Over.")
+            if self.cheat_invincible:
+                self.time_left = 0
+            else:
+                self.is_game_over = True
+                print("Time's up! Game Over.")
             return
         # Update ghost timers
         for ghost in self.ghosts:
