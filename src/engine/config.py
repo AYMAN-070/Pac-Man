@@ -56,62 +56,78 @@ class GameConfig:
             for key, value in user_settings.items():
                 if key in self.settings:
                     self.settings[key] = value
-            if self.settings['points_per_pacgum'] <= 0:
-                self.settings['points_per_pacgum'] = 10
-            if self.settings['points_per_pacgum'] > 100000:
-                self.settings['points_per_pacgum'] = 100000
-            if self.settings['points_per_super_pacgum'] <= 0:
-                self.settings['points_per_super_pacgum'] = 50
-            if self.settings['points_per_super_pacgum'] > 100000:
-                self.settings['points_per_super_pacgum'] = 100000
-            if self.settings['points_per_ghost'] <= 0:
-                self.settings['points_per_ghost'] = 200
-            if self.settings['points_per_ghost'] > 100000:
-                self.settings['points_per_ghost'] = 100000
+            defaults_points = {
+                'points_per_pacgum': 10,
+                'points_per_super_pacgum': 50,
+                'points_per_ghost': 200
+            }
+            for key, default_val in defaults_points.items():
+                try:
+                    val = int(self.settings[key])
+                    self.settings[key] = max(1, min(val, 100000))
+                except (ValueError, TypeError):
+                    self.settings[key] = default_val
+                    print(f"[WARNING] '{key}' is invalid. "
+                          f"Defaulting to {default_val}.", file=sys.stderr)
 
-            if not isinstance(self.settings.get('lives'), int):
+            try:
+                lives = int(self.settings['lives'])
+                self.settings['lives'] = max(1, min(lives, 99))
+            except (ValueError, TypeError):
                 self.settings['lives'] = 3
-                print("[WARNING] 'lives' must be an integer."
+                print("[WARNING] 'lives' must be a valid number. "
                       "Defaulting to 3.", file=sys.stderr)
-            elif self.settings['lives'] < 1:
-                self.settings['lives'] = 1
-                print("[WARNING] 'lives' cannot be < 1."
-                      "Forcing to 1.", file=sys.stderr)
-            elif self.settings['lives'] > 99:
-                self.settings['lives'] = 99
-                print("[WARNING] 'lives' capped at 99 "
-                      "to preserve UI stability.", file=sys.stderr)
-            if 'level' in self.settings and isinstance(self.settings['level'],
-                                                       list):
-                for i, lvl in enumerate(self.settings['level']):
-                    # Sécurité pour Width
-                    if not isinstance(lvl.get('width'), int):
-                        lvl['width'] = 25
-                        print(f"[WARNING] Level {i} width is not an integer. "
+
+            levels = self.settings.get('level')
+            if not isinstance(levels, list) or len(levels) == 0:
+                print("[WARNING] 'level' is missing or empty. "
+                      "Using default level 1.", file=sys.stderr)
+                # we give at least level 1
+                self.settings['level'] = [{"width": 15, "height": 15}]
+            else:
+                valid_levels = []
+                for i, lvl in enumerate(levels):
+                    if not isinstance(lvl, dict):
+                        continue
+
+                    #  Width security
+                    try:
+                        w = int(lvl.get('width', 25))
+                        w = max(10, min(w, 80))
+                    except (ValueError, TypeError):
+                        print(f"[WARNING] Level {i} width is invalid. "
                               f"Defaulting to 25.", file=sys.stderr)
-                    elif lvl['width'] < 10:
-                        lvl['width'] = 10
-                    elif lvl['width'] > 80:
-                        lvl['width'] = 80
-                    # Sécurité pour Height
-                    if not isinstance(lvl.get('height'), int):
-                        lvl['height'] = 25
-                        print(f"[WARNING] Level {i} height is not an integer. "
+                        w = 25
+
+                    # Height security
+                    try:
+                        h = int(lvl.get('height', 25))
+                        h = max(10, min(h, 80))
+                    except (ValueError, TypeError):
+                        print(f"[WARNING] Level {i} height is invalid. "
                               f"Defaulting to 25.", file=sys.stderr)
-                    elif lvl['height'] < 10:
-                        lvl['height'] = 10
-                    elif lvl['height'] > 80:
-                        lvl['height'] = 80
+                        h = 25
+
+                    valid_levels.append({"width": w, "height": h})
+
+                if len(valid_levels) == 0:
+                    print("[WARNING] No valid levels parsed. "
+                          "Using default level 1.", file=sys.stderr)
+                    valid_levels = [{"width": 15, "height": 15}]
+
+                self.settings['level'] = valid_levels
+
             print(f"Configuration successfully loaded from {self.filepath}")
+
         except FileNotFoundError:
-            print(f"Warning: The file '{self.filepath}' could not be found. "
-                  f"Using default settings.")
-        except json.JSONDecodeError:
-            print(f"Warning: The file '{self.filepath}' contains invalid "
-                  f"formatiting. Using default settings.")
+            print(f"[WARNING] The file '{self.filepath}' could not be found. "
+                  f"Using default settings.", file=sys.stderr)
+        except json.JSONDecodeError as e:
+            print(f"[WARNING] The file '{self.filepath}' contains invalid JSON"
+                  f" ({e}). Using default settings.", file=sys.stderr)
         except Exception:
-            print("Unexpected warning while reading the configuration."
-                  "Using default settings.")
+            print("[WARNING] Unexpected error while reading the config."
+                  "Using default settings.", file=sys.stderr)
 
 
 if __name__ == "__main__":
