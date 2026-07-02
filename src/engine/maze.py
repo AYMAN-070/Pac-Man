@@ -34,15 +34,17 @@ class Maze:
         try:
             if not MAZE_GENERATOR_AVAILABLE:
                 raise ImportError("Mazegenerator package is not installed.")
-            current_seed = self.seed
-            random.seed(current_seed)
+            random.seed(self.seed)
             generator = mazegenerator.MazeGenerator(
                 size=(self.width // 2, self.height // 2),
                 perfect=False,
-                seed=current_seed
+                seed=self.seed
             )
-            generator.generate(seed=current_seed)
+            generator.generate(seed=self.seed)
             raw_maze = generator.maze
+            print("\n=== ANALYSE DU LABYRINTHE BRUT ===")
+            for i in range(len(raw_maze)):
+                print(raw_maze[i])
             self._parse_external_maze(raw_maze)
             self._get_reachable_cells(self.width // 2, self.height // 2,
                                       self.width, self.height)
