@@ -44,6 +44,7 @@ TEXTURES_PATH = [
         "sprit_ghost3.png",
         "sprit_ghost4.png",
         "sprit_pacman.png",
+        "sprit_pacman_cheat.png",
         "sprit_pacman_death.png",
 ]
 
@@ -53,10 +54,10 @@ class Textures:
 
     def __init__(self, renderer: Any) -> None:
         """  """  # TODO
-        self.all = dict()
+        self.all: dict[str, Any] = dict()
         self.renderer = renderer
 
-    def load_textures(self) -> None:
+    def load_textures(self) -> dict[str, Any]:
         """  """  # TODO
         try:
             for path in TEXTURES_PATH[1:]:
@@ -71,7 +72,7 @@ class Textures:
         for key, elem in self.all.items():
             s2.SDL_DestroyTexture(elem)
 
-    def create_texture(self, path: str):
+    def create_texture(self, path: str) -> None:
         """  """  # TODO
         image = s2_img.load_img(path)
         if not image:

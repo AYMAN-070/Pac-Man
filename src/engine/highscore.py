@@ -24,10 +24,11 @@ class HighscoreManager:
                     for entry in data:
                         if (isinstance(entry, dict) and
                                 isinstance(entry.get("name"), str)
-                                and entry.get("name").isalnum()
-                                and isinstance(entry.get("score"), int)
-                                and entry.get("score") >= 0):
-                            valid_scores.append(entry)
+                                and str(entry.get("name")).isalnum()
+                                and isinstance(entry.get("score"), int)):
+                            data_score: int = int(str(entry.get("score")))
+                            if data_score >= 0:
+                                valid_scores.append(entry)
                     self.scores = valid_scores
                 else:
                     self.scores = []

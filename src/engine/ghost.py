@@ -52,11 +52,11 @@ class Ghost:
         self.state = GhostState.DEAD
         self.x = self.start_x
         self.y = self.start_y
-        self.xf: float = self.start_x + 0.5
-        self.yf: float = self.start_y + 0.5
-        self.destx: float = -1
-        self.desty: float = 0
-        self.direction: str = "DOWN"
+        self.xf = self.start_x + 0.5
+        self.yf = self.start_y + 0.5
+        self.destx = -1
+        self.desty = 0
+        self.direction = "DOWN"
         self.timer = 5.0  # Respawns in its corner after 5 seconds
 
     def update_timer(self, delta_time: float) -> None:

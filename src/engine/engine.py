@@ -9,6 +9,7 @@ from engine.ghost import GhostState
 import math
 from engine.highscore import HighscoreManager
 import random
+import sys
 
 
 def update_pos(entity: Ghost | Player, pos: str, goal: float,
@@ -132,8 +133,12 @@ class GameEngine:
         width: int = levels_config[level_index].get("width", 21)
         height: int = levels_config[level_index].get("height", 21)
         if width % 2 == 0:
+            print(f"[WARNING] Maze width ({width}) must be odd. "
+                  f"Forced to {width + 1}.", file=sys.stderr)
             width += 1
         if height % 2 == 0:
+            print(f"[WARNING] Maze height ({height}) must be odd. "
+                  f"Forced to {height + 1}.", file=sys.stderr)
             height += 1
         self.maze = Maze(width, height, seed)
         #   PLACE PLAYER
@@ -311,7 +316,8 @@ class GameEngine:
         return valid_dirs
 
     def _find_shortest_path(self, start_x: int, start_y: int,
-                            target_x: int, target_y: int):
+                            target_x: int, target_y: int
+                            ) -> None | tuple[int, int, None]:
         """
         Find the shortest path using BFS
         """
@@ -323,7 +329,7 @@ class GameEngine:
                 return first_dir
             for d in [Direction.UP, Direction.DOWN,
                       Direction.LEFT, Direction.RIGHT]:
-                nx, ny = cx + d.value[0], cy + d.value[1]      
+                nx, ny = cx + d.value[0], cy + d.value[1]
                 if (nx, ny) not in visited and not self.maze.is_wall(nx, ny):
                     visited.add((nx, ny))
                     queue.append((nx, ny, first_dir if first_dir else d))
@@ -350,7 +356,7 @@ class GameEngine:
                     ghost.y,
                     ghost.direction)
                 if not valid_dirs:
-                    continue  # juste par securité
+                    continue  # security check , should never be used
                 if ghost.state == GhostState.EDIBLE:
                     best_dir = max(valid_dirs,
                                    key=lambda
@@ -403,8 +409,11 @@ class GameEngine:
             return
         self.time_left -= delta_time
         if self.time_left <= 0:
-            self.is_game_over = True
-            print("Time's up! Game Over.")
+            if self.cheat_invincible:
+                self.time_left = 0
+            else:
+                self.is_game_over = True
+                print("Time's up! Game Over.")
             return
         # Update ghost timers
         for ghost in self.ghosts:

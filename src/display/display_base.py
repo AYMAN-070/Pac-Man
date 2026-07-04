@@ -21,6 +21,7 @@ class BaseDisplay:
                  font1: Any, font2: Any, font3: Any, midxy: list[int]) -> None:
         """  """  # TODO
         self.engine = engine
+        self.start = False
         self.s = sounds
         self.sounds = sounds.sounds
         self.eat_sounds = ["eat_sound1", "eat_sound2", "eat_sound3"]
@@ -30,9 +31,9 @@ class BaseDisplay:
 
         self.init_engine(self.engine.current_level)
 
-        self.rotasprit = 1
-        self.rotadeath = -0.1
-        self.n_rotasprit = 4
+        self.rotasprit: float | int = 1
+        self.rotadeath: float | int = -0.1
+        self.n_rotasprit: float | int = 4
         self.sprits_rate = 0
         self.time = time.time()
         self.end = False
@@ -51,6 +52,9 @@ class BaseDisplay:
         self.i = 0
         self.seed = 0
         self.level = 0
+        self.xyf = [0, 0]
+        self.row = 1
+        self.name = ""
         self.ghost_color = {
             0: "sprit_ghost1",
             1: "sprit_ghost2",
@@ -80,9 +84,11 @@ class BaseDisplay:
                         "purple",
         ]
 
-    def init_engine(self, level: int):
+    def init_engine(self, level: int) -> None:
         """  """
         #  TODO
+        self.start = False
+        self.i = 0
         self.maze = self.engine.maze.grid
         self.player = self.engine.player
         self.ghosts = self.engine.ghosts
@@ -95,6 +101,8 @@ class BaseDisplay:
         self.shake_death = 0
         self.end = False
         self.level = level
+        self.xyf = [0, 0]
+        self.row = 1
         for ghost in self.ghosts:
             ghost.rotasprit = random.randint(0, 4)
 

@@ -8,20 +8,17 @@ except ImportError as e:
     print("Solution : lunch 'make run'.", file=sys.stderr)
     sys.exit(1)
 
-from engine.engine import GameEngine
-from display.helpers.textures import Textures
-from display.display import Display
 from engine.player import Direction
 from inputs.init_input_engine import InitInputEngine
-from inputs.input_sdl_engine import SDLCoreEngine
 
 
-class InputEngine(SDLCoreEngine):
+class InputProcesses(InitInputEngine):
 
     def cheat_codes(self) -> str:
         match self.d.text:
             case "/cheat":
                 self.text_mode = False
+                self.player.speed = self.player.speed * 1.5
                 self.engine.toggle_invincibility()
             case "/next":
                 self.text_mode = False
@@ -29,18 +26,25 @@ class InputEngine(SDLCoreEngine):
                 return "reload"
         return ""
 
-    def newgame_keys(self, event) -> str:
-        """  """ #  TODO
+    def newgame_keys(self, event: Any) -> str:
 
         match event.key.keysym.sym:
             case s2.SDLK_UP | s2.SDLK_w:
                 self.player.next_direction = Direction.UP
+                if not self.d.start:
+                    self.d.start = True
             case s2.SDLK_RIGHT | s2.SDLK_d:
                 self.player.next_direction = Direction.RIGHT
+                if not self.d.start:
+                    self.d.start = True
             case s2.SDLK_DOWN | s2.SDLK_s:
                 self.player.next_direction = Direction.DOWN
+                if not self.d.start:
+                    self.d.start = True
             case s2.SDLK_LEFT | s2.SDLK_a:
                 self.player.next_direction = Direction.LEFT
+                if not self.d.start:
+                    self.d.start = True
             case s2.SDLK_ESCAPE:
                 return "escape"
             case s2.SDLK_SLASH:
@@ -53,8 +57,7 @@ class InputEngine(SDLCoreEngine):
 
         return ""
 
-    def menu_mouse(self, event) -> str:
-        """  """ #  TODO
+    def menu_mouse(self, event: Any) -> str:
 
         if event.button.button == s2.SDL_BUTTON_LEFT:
             act = self.check_button(
@@ -62,16 +65,15 @@ class InputEngine(SDLCoreEngine):
                                     event.button.y)
             if act:
                 return act
+        return ""
 
     def get_menu_buttons(self) -> dict[str, Any]:
-        """  """ #  TODO
         data = dict()
 
         jump = 350
         w = int(self.midxy[1] / 2)
         h = int(self.midxy[1] / 4)
         pading = int(w / 2)
-        pos_w = int(self.midxy[0] -  (w/ 2))
 
         x_lu = self.midxy[0] - w / 2  # left up
         x_rd = self.midxy[0] + w / 2  # right down
@@ -106,7 +108,7 @@ class InputEngine(SDLCoreEngine):
                 if button[option]['lu'][1] < y < button[option]['rd'][1]:
                     return str(option)
         return ""
-    
+
     def set_music_off(self, x: int, y: int) -> str:
         lux = 25
         luy = self.midxy[1] * 2 - 175
@@ -117,7 +119,7 @@ class InputEngine(SDLCoreEngine):
                     self.s.music_off_background_sound(False)
                 else:
                     self.s.music_off_background_sound(True)
-
+        return ""
 
     def return_menu(self, event: Any) -> str:
 
@@ -129,7 +131,7 @@ class InputEngine(SDLCoreEngine):
             if luy < event.button.y < luy + (size - ypad):
                 return "confirm_quit"
         return ""
-    
+
     def escape_mouse(self, event: Any) -> str:
         self.set_music_off(event.button.x, event.button.y)
         if event.button.button == s2.SDL_BUTTON_LEFT:
@@ -144,7 +146,7 @@ class InputEngine(SDLCoreEngine):
             ret = self.return_menu(event)
             if ret:
                 return ret
-            return ""
+        return ""
 
     def instructions_mouse(self, event: Any) -> str:
 
@@ -168,8 +170,13 @@ class InputEngine(SDLCoreEngine):
             if lux + gapx < event.button.x < lux + sizex - gapx:
                 if luy + gapy < event.button.y < luy + sizey - gapy:
                     if event.button.x < self.midxy[0] - 110:
-                        return self.previous
+                        return str(self.previous)
                     if event.button.x > self.midxy[0] + 110:
+                        if self.d.name:
+                            self.engine.highscore_manager.add_score(
+                                                            self.d.name,
+                                                            self.engine.score)
+                            self.d.name = ""
                         if self.previous == "menu":
                             return "exit"
                         else:
@@ -185,7 +192,8 @@ class InputEngine(SDLCoreEngine):
             case s2.SDLK_BACKSPACE:
                 self.d.text = self.d.text[:-1]
             case s2.SDLK_RETURN:
-                if self.d.text and len(self.d.text) <= 10 and self.d.text.isalnum():
-                    self.engine.highscore_manager.add_score(self.d.text, self.engine.score)
-                    return "menu"
+                if self.d.text and len(self.d.text) <= 10 and \
+                        self.d.text.isalnum():
+                    self.d.name = self.d.text
+                    return "confirm_quit"
         return ""
