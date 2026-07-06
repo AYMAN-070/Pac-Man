@@ -1,4 +1,6 @@
-from typing import List, Any
+from typing import List
+import sys
+from engine.player import Direction
 try:
     import mazegenerator
     MAZE_GENERATOR_AVAILABLE = True
@@ -16,198 +18,169 @@ class Maze:
         """
         Initializes the maze properties and generates the grid.
         """
-        if width % 2 == 0:
-            width += 1
-        if height % 2 == 0:
-            height += 1
+
         self.width: int = width
         self.height: int = height
         self.seed: int = seed
         # (0 = path, 1 = wall, 2 = pacgum, 3 = super-pacgum)
         self.grid: List[List[int]] = []
+        self.items: List[List[int]] = [[0 for _ in range(width)]
+                                       for _ in range(height)]
+        self.reachable: set[tuple[int, int]] = set()
         self.generate_maze()
 
     def generate_maze(self) -> None:
-        """
-        Calls the external 'A-Maze-ing' package to create the maze.
-        """
         try:
             if not MAZE_GENERATOR_AVAILABLE:
                 raise ImportError("Mazegenerator package is not installed.")
             random.seed(self.seed)
             generator = mazegenerator.MazeGenerator(
-                size=(self.width // 2, self.height // 2),
+                size=(self.width, self.height),
                 perfect=False,
                 seed=self.seed
             )
             generator.generate(seed=self.seed)
-            raw_maze = generator.maze
-            print("\n=== ANALYSE DU LABYRINTHE BRUT ===")
-            for i in range(len(raw_maze)):
-                print(raw_maze[i])
-            self._parse_external_maze(raw_maze)
-            self._get_reachable_cells(self.width // 2, self.height // 2,
-                                      self.width, self.height)
-            self._ensure_corners_accessible()
-            self._place_items()
-            print("Maze generated successfully using external package")
+            raw_maze = getattr(generator, 'maze',
+                               getattr(generator, 'grid', []))
+
+            self.grid = [[raw_maze[y][x] for x in range(self.width)]
+                         for y in range(self.height)]
+            print("Maze generated successfully using exact dimensions.")
         except Exception as e:
-            print(f"Warning: External maze generator failed ({e}), "
-                  f"creat fallback maze")
+            print(f"[WARNING] External maze generator failed ({e}).",
+                  file=sys.stderr)
             self._create_dummy_grid()
-            self._get_reachable_cells(self.width // 2, self.height // 2,
-                                      self.width, self.height)
-            self._ensure_corners_accessible()
-            self._place_items()
+        self._ensure_full_connectivity()
+        self._place_items()
 
-    def _parse_external_maze(self, raw_maze: Any) -> None:
+    def _ensure_full_connectivity(self) -> None:
         """
-        Adapts the size and content of the external maze intelligently,
+        Minimal connection: Only Pac-Man and the Ghosts are connected
+        to the main area
         """
-        temp_grid = []
-        if isinstance(raw_maze, list) and len(raw_maze) > 0:
-            temp_grid = raw_maze
-        elif hasattr(raw_maze, 'grid') and isinstance(raw_maze.grid, list):
-            temp_grid = raw_maze.grid
-        elif hasattr(raw_maze, 'maze') and isinstance(raw_maze.maze, list):
-            temp_grid = raw_maze.maze
-        gen_height = len(temp_grid)
-        gen_width = len(temp_grid[0])
-        self.grid = [[1 for _ in range(self.width)]
-                     for _ in range(self.height)]
+        start_x = self.width // 2
+        start_y = self.height // 2
 
-        for y in range(gen_height):
-            for x in range(gen_width):
-                cell = temp_grid[y][x]
-                px = x * 2 + 1
-                py = y * 2 + 1
-                if py >= self.height or px >= self.width:
-                    continue
-                self.grid[py][px] = 0
-                if not (cell & 1) and py - 1 >= 0:          # Nord (1)
-                    self.grid[py - 1][px] = 0
-                if not (cell & 2) and px + 1 < self.width:  # Est (2)
-                    self.grid[py][px + 1] = 0
-                if not (cell & 4) and py + 1 < self.height:    # Sud (4)
-                    self.grid[py + 1][px] = 0
-                if not (cell & 8) and px - 1 >= 0:          # Ouest (8)
-                    self.grid[py][px - 1] = 0
-        self.carve_center()
+        # find principal zone
+        self.reachable = self._get_reachable(start_x, start_y)
 
-    def pattern_42(self) -> None:
-        """Reserve pattern 42 coordinates so that it is not sculpted."""
-        self.pattern: set[tuple[int, int]] = set()
-        if self.height < 10 or self.width < 10:
-            print("Warning: Maze size too small to draw the 42 pattern")
-            return
-        cx = self.width // 2
-        cy = self.height // 2
-        offsets = {
-            (-3, -2), (-3, -1), (-3, 0), (-2, 0), (-1, 0), (-1, 1), (-1, 2),
-            (1, -2), (2, -2), (3, -2), (3, -1), (3, 0), (2, 0), (1, 0), (1, 1),
-            (1, 2), (2, 2), (3, 2)
-        }
-        self.pattern.update(
-            (cx + dx, cy + dy) for dx, dy in offsets
-            if 0 <= (cx + dx) < self.width and 0 <= (cy + dy) < self.height
-        )
+        # Ensure that the 4 (phantom) corners are connected to this zone.
+        essential_points = [(1, 1), (self.width - 2, 1), (1, self.height - 2),
+                            (self.width - 2, self.height - 2)]
+        for ex, ey in essential_points:
+            if (ex, ey) not in self.reachable:
+                self._force_connection((ex, ey), (start_x, start_y))
+                self.reachable = self._get_reachable(start_x, start_y)
 
-    def carve_center(self) -> None:
-        """Creuse le centre et dessine le logo 42"""
-        center_x = self.width // 2
-        center_y = self.height // 2
-        # empty center
-        for y in range(center_y - 4, center_y + 5):
-            for x in range(center_x - 6, center_x + 7):
-                if 0 < y < self.height - 1 and 0 < x < self.width - 1:
-                    self.grid[y][x] = 0
-        self.pattern_42()
-        for x, y in self.pattern:
-            self.grid[y][x] = 1
+    def _force_connection(self, start, end) -> None:
+        """Dig a simple straight path until it connects. """
+        cx, cy = start
+        tx, ty = end
+        while (cx, cy) not in self.reachable:
+            # Simple logique de déplacement vers la cible
+            dx = 1 if tx > cx else (-1 if tx < cx else 0)
+            dy = 1 if ty > cy else (-1 if ty < cy else 0)
+            # On casse le mur
+            if dx != 0:
+                wall_dir = 2 if dx > 0 else 8
+                opp_dir = 8 if dx > 0 else 2
+            else:
+                wall_dir = 4 if dy > 0 else 1
+                opp_dir = 1 if dy > 0 else 4
+
+            self.grid[cy][cx] &= ~wall_dir
+            cx += dx
+            cy += dy
+            if 0 <= cx < self.width and 0 <= cy < self.height:
+                self.grid[cy][cx] &= ~opp_dir
+
+    def _get_reachable(self, start_x: int, start_y: int) -> set:
+        """
+        Return all accessible case from (x, y).
+        """
+        reachable = set()
+        queue = [(start_x, start_y)]
+        reachable.add((start_x, start_y))
+        while queue:
+            cx, cy = queue.pop(0)
+            for d in [Direction.UP, Direction.DOWN,
+                      Direction.LEFT, Direction.RIGHT]:
+                if self.can_move(cx, cy, d.name):
+                    nx, ny = cx + d.value[0], cy + d.value[1]
+                    if (0 <= nx < self.width and 0 <= ny < self.height
+                            and (nx, ny) not in reachable):
+                        reachable.add((nx, ny))
+                        queue.append((nx, ny))
+        return reachable
+
+    def find_nearest_empty(self, cx: int, cy: int) -> tuple[int, int]:
+        """find case (0) nearest to the center."""
+        # On cherche dans un carré grandissant autour du centre
+        for radius in range(0, max(self.width, self.height)):
+            for y in range(cy - radius, cy + radius + 1):
+                for x in range(cx - radius, cx + radius + 1):
+                    if 0 <= x < self.width and 0 <= y < self.height:
+                        # Si c'est un chemin (valeur 0)
+                        if self.grid[y][x] == 0:
+                            return (x, y)
+        return (cx, cy)
 
     def _create_dummy_grid(self) -> None:
-        """
-        Creates a basic fallback maze if the external generator fails.
-        1 = Wall, 0 = Corridor
-        """
+        """Fallback if package doesn't work"""
         self.grid = [[0 for _ in range(self.width)]
                      for _ in range(self.height)]
         for y in range(self.height):
             for x in range(self.width):
-                if (x == 0 or x == self.width - 1
-                        or y == 0 or y == self.height - 1):
-                    self.grid[y][x] = 1
-                elif x % 2 == 0 and y % 2 == 0:
-                    self.grid[y][x] = 1
-        self.carve_center()
-
-    def _get_reachable_cells(self, start_x: int, start_y: int,
-                             width: int, height: int) -> None:
-        """
-        find all reachable cases from the begining """
-        self.reachable = set()
-        queue = [(start_x, start_y)]
-        self.reachable.add((start_x, start_y))
-        while len(queue) > 0:
-            cx, cy = queue.pop(0)
-            for dx, dy in [(0, -1), (0, 1), (-1, 0), (1, 0)]:
-                nx, ny = cx + dx, cy + dy
-                if 0 <= nx < width and 0 <= ny < height:
-                    if (not self.is_wall(nx, ny) and (nx, ny)
-                            not in self.reachable):
-                        self.reachable.add((nx, ny))
-                        queue.append((nx, ny))
-
-    def _ensure_corners_accessible(self) -> None:
-        """
-        Checks if the 4 corners are accessible. If a corner is blocked,
-        """
-        corners = [
-            (1, 1),                                        # Top-Left
-            (self.width - 2, 1),                           # Top-Right
-            (1, self.height - 2),                          # Bottom-Left
-            (self.width - 2, self.height - 2)              # Bottom-Right
-        ]
-        center_x, center_y = self.width // 2, self.height // 2
-        for cx, cy in corners:
-            # If the corner is already connected to Pac-Man, we skip
-            if (cx, cy) in self.reachable:
-                continue
-            # If we reach here, the corner is isolated
-            current_x, current_y = cx, cy
-            while (current_x, current_y) not in self.reachable:
-                self.grid[current_y][current_x] = 0
-                self.reachable.add((current_x, current_y))
-                #  Move one step towards the center of the maze
-                if current_x < center_x:
-                    current_x += 1
-                elif current_x > center_x:
-                    current_x -= 1
-                elif current_y < center_y:
-                    current_y += 1
-                elif current_y > center_y:
-                    current_y -= 1
+                cell = 0
+                if y == 0:
+                    cell += 1               # Mur Nord
+                if x == self.width - 1:
+                    cell += 2              # Mur Est
+                if y == self.height - 1:
+                    cell += 4               # Mur Sud
+                if x == 0:
+                    cell += 8               # Mur Ouest
+                self.grid[y][x] = cell
 
     def _place_items(self) -> None:
-        """
-        Places pacgums and super-pacgums on the grid according to the rules.
-        """
-        # Super-pacgums in the 4 corners
-        self.grid[1][1] = 3   # Top-Left
-        self.grid[1][self.width - 2] = 3  # Top-Right
-        self.grid[self.height - 2][1] = 3   # Bottom-Left
-        self.grid[self.height - 2][self.width - 2] = 3    # Bottom-Right
-        # Pacgums in most corridors
-        for y in range(1, self.height - 1):
-            for x in range(1, self.width - 1):
-                if self.grid[y][x] == 0 and (x, y) in self.reachable:
-                    self.grid[y][x] = 2
-        self.grid[self.height // 2][self.width // 2] = 0
+        """Parcourt TOUTE la grille et place une Pac-Gum sur chaque chemin."""
+        # clear
+        self.items = [[0 for _ in range(self.width)]
+                      for _ in range(self.height)]
 
-    def is_wall(self, x: int, y: int) -> bool:
+        # On place Super-Pacgums
+        corners = [(0, 0), (self.width - 1, 0), (0, self.height - 1),
+                   (self.width - 1, self.height - 1)]
+        for cx, cy in corners:
+            self.items[cy][cx] = 3
+
+        #  place Pac-Gum (2)
+        for y in range(self.height):
+            for x in range(self.width):
+                # Si c'est un chemin (0) et pas déjà une Super-Pacgum (3)
+                if self.grid[y][x] != 15 and self.items[y][x] == 0:
+                    self.items[y][x] = 2
+
+        # clear the center (spawn)
+        cx, cy = self.width // 2, self.height // 2
+        self.items[cy][cx] = 0
+        count = sum(row.count(2) for row in self.items)
+        print(f"DEBUG: J'ai placé {count} Pac-Gums sur la carte.")
+
+    def can_move(self, x: int, y: int, direction: str) -> bool:
         """
-        Allows the Game Engine to know if a coordinate is a wall.
+        Checks if it is possible to leave cell (x, y) in a given direction.
+        direction must be 'UP', 'RIGHT', 'DOWN', or 'LEFT'.
         """
         if x < 0 or x >= self.width or y < 0 or y >= self.height:
+            return False
+        cell = self.grid[y][x]
+        if direction == 'UP' and not (cell & 1):
             return True
-        return self.grid[y][x] == 1
+        if direction == 'RIGHT' and not (cell & 2):
+            return True
+        if direction == 'DOWN' and not (cell & 4):
+            return True
+        if direction == 'LEFT' and not (cell & 8):
+            return True
+        return False
