@@ -134,8 +134,6 @@ class Maze:
         # clear the center (spawn)
         cx, cy = self.width // 2, self.height // 2
         self.items[cy][cx] = 0
-        count = sum(row.count(2) for row in self.items)
-        print(f"DEBUG: J'ai placé {count} Pac-Gums sur la carte.")
 
     def can_move(self, x: int, y: int, direction: str) -> bool:
         """
@@ -154,3 +152,8 @@ class Maze:
         if direction == 'LEFT' and not (cell & 8):
             return True
         return False
+
+    def get_center_coord(self) -> tuple[int, int]:
+        cx = (self.width - 1) // 2
+        cy = (self.height - 1) // 2
+        return (cx, cy)

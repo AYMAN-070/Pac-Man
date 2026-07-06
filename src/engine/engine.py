@@ -119,6 +119,7 @@ class GameEngine:
         # Load the first level
         self.load_level()
 
+
     def load_level(self) -> None:
         """
         Generates the maze and places the player and ghosts for current level.
@@ -132,9 +133,9 @@ class GameEngine:
         width: int = levels_config[level_index].get("width", 21)
         height: int = levels_config[level_index].get("height", 21)
         self.maze = Maze(width, height, seed)
-        start_x = width // 2
-        start_y = height // 2
-
+        start_x, start_y = self.maze.get_center_coord()
+        if self.maze.grid[start_y][start_x] == 1:
+            start_x += 1
         #   PLACE PLAYER
         lives: int = self.config.settings.get("lives", 3)
         if self.current_level == 1:
