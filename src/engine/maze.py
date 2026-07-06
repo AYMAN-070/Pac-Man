@@ -50,49 +50,7 @@ class Maze:
             print(f"[WARNING] External maze generator failed ({e}).",
                   file=sys.stderr)
             self._create_dummy_grid()
-        self._ensure_full_connectivity()
         self._place_items()
-
-    def _ensure_full_connectivity(self) -> None:
-        """
-        Minimal connection: Only Pac-Man and the Ghosts are connected
-        to the main area
-        """
-        start_x = self.width // 2
-        start_y = self.height // 2
-
-        # find principal zone
-        self.reachable = self._get_reachable(start_x, start_y)
-
-        # Ensure that the 4 (phantom) corners are connected to this zone.
-        essential_points = [(1, 1), (self.width - 2, 1), (1, self.height - 2),
-                            (self.width - 2, self.height - 2)]
-        for ex, ey in essential_points:
-            if (ex, ey) not in self.reachable:
-                self._force_connection((ex, ey), (start_x, start_y))
-                self.reachable = self._get_reachable(start_x, start_y)
-
-    def _force_connection(self, start, end) -> None:
-        """Dig a simple straight path until it connects. """
-        cx, cy = start
-        tx, ty = end
-        while (cx, cy) not in self.reachable:
-            # Simple logique de déplacement vers la cible
-            dx = 1 if tx > cx else (-1 if tx < cx else 0)
-            dy = 1 if ty > cy else (-1 if ty < cy else 0)
-            # On casse le mur
-            if dx != 0:
-                wall_dir = 2 if dx > 0 else 8
-                opp_dir = 8 if dx > 0 else 2
-            else:
-                wall_dir = 4 if dy > 0 else 1
-                opp_dir = 1 if dy > 0 else 4
-
-            self.grid[cy][cx] &= ~wall_dir
-            cx += dx
-            cy += dy
-            if 0 <= cx < self.width and 0 <= cy < self.height:
-                self.grid[cy][cx] &= ~opp_dir
 
     def _get_reachable(self, start_x: int, start_y: int) -> set:
         """
@@ -113,17 +71,29 @@ class Maze:
                         queue.append((nx, ny))
         return reachable
 
-    def find_nearest_empty(self, cx: int, cy: int) -> tuple[int, int]:
-        """find case (0) nearest to the center."""
-        # On cherche dans un carré grandissant autour du centre
-        for radius in range(0, max(self.width, self.height)):
-            for y in range(cy - radius, cy + radius + 1):
-                for x in range(cx - radius, cx + radius + 1):
-                    if 0 <= x < self.width and 0 <= y < self.height:
-                        # Si c'est un chemin (valeur 0)
-                        if self.grid[y][x] == 0:
-                            return (x, y)
-        return (cx, cy)
+    def find_real_center(self) -> tuple[int, int]:
+        """Find the center of the actual play area """
+        # calculate the average of the coordinates of all cells that are paths
+        paths = [(x, y) for y in range(self.height)
+                 for x in range(self.width) if self.grid[y][x] == 0]
+
+        if not paths:
+            return (self.width // 2, self.height // 2)
+
+        sum_x = sum(p[0] for p in paths)
+        sum_y = sum(p[1] for p in paths)
+        center_x = int(sum_x / len(paths))
+        center_y = int(sum_y / len(paths))
+
+        # We return the "square" closest to this center of mass
+        best_pos = (center_x, center_y)
+        min_dist = float('inf')
+        for x, y in paths:
+            dist = (x - center_x)**2 + (y - center_y)**2
+            if dist < min_dist:
+                min_dist = dist
+                best_pos = (x, y)
+        return best_pos
 
     def _create_dummy_grid(self) -> None:
         """Fallback if package doesn't work"""

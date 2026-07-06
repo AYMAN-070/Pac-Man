@@ -132,16 +132,15 @@ class GameEngine:
         width: int = levels_config[level_index].get("width", 21)
         height: int = levels_config[level_index].get("height", 21)
         self.maze = Maze(width, height, seed)
-
-        mid_x, mid_y = width // 2, height // 2
-        spawn_x, spawn_y = self.maze.find_nearest_empty(mid_x, mid_y)
+        start_x = width // 2
+        start_y = height // 2
 
         #   PLACE PLAYER
         lives: int = self.config.settings.get("lives", 3)
         if self.current_level == 1:
-            self.player = Player(spawn_x, spawn_y, lives)
+            self.player = Player(start_x, start_y, lives)
         else:
-            self.player.set_new_level_start(spawn_x, spawn_y)
+            self.player.set_new_level_start(start_x, start_y)
         if self.current_level == 1:
             self.ghosts = [
                 Ghost(1, 1, 0),                  # Top-Left
