@@ -8,6 +8,8 @@ except ImportError:
     MAZE_GENERATOR_AVAILABLE = False
 import random
 
+sys.setrecursionlimit(6000)
+
 
 class Maze:
     """
@@ -52,25 +54,6 @@ class Maze:
             self._create_dummy_grid()
         self._place_items()
 
-    def _get_reachable(self, start_x: int, start_y: int) -> set:
-        """
-        Return all accessible case from (x, y).
-        """
-        reachable = set()
-        queue = [(start_x, start_y)]
-        reachable.add((start_x, start_y))
-        while queue:
-            cx, cy = queue.pop(0)
-            for d in [Direction.UP, Direction.DOWN,
-                      Direction.LEFT, Direction.RIGHT]:
-                if self.can_move(cx, cy, d.name):
-                    nx, ny = cx + d.value[0], cy + d.value[1]
-                    if (0 <= nx < self.width and 0 <= ny < self.height
-                            and (nx, ny) not in reachable):
-                        reachable.add((nx, ny))
-                        queue.append((nx, ny))
-        return reachable
-
     def find_real_center(self) -> tuple[int, int]:
         """Find the center of the actual play area """
         # calculate the average of the coordinates of all cells that are paths
@@ -96,24 +79,17 @@ class Maze:
         return best_pos
 
     def _create_dummy_grid(self) -> None:
-        """Fallback if package doesn't work"""
-        self.grid = [[0 for _ in range(self.width)]
+        """Create a simple maze if the generator crashes."""
+        self.grid = [[15 for _ in range(self.width)]
                      for _ in range(self.height)]
+
         for y in range(self.height):
             for x in range(self.width):
-                cell = 0
-                if y == 0:
-                    cell += 1               # Mur Nord
-                if x == self.width - 1:
-                    cell += 2              # Mur Est
-                if y == self.height - 1:
-                    cell += 4               # Mur Sud
-                if x == 0:
-                    cell += 8               # Mur Ouest
-                self.grid[y][x] = cell
+                if x % 2 == 0 or y % 2 == 0:
+                    self.grid[y][x] = 0
 
     def _place_items(self) -> None:
-        """Parcourt TOUTE la grille et place une Pac-Gum sur chaque chemin."""
+        """Traverse the ENTIRE grid and place a Pac-Dot on every path."""
         # clear
         self.items = [[0 for _ in range(self.width)]
                       for _ in range(self.height)]

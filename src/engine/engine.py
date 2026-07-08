@@ -325,9 +325,9 @@ class GameEngine:
         """
         for ghost in self.ghosts:
             if ghost.state == GhostState.EDIBLE:
-                ghost.speed = 0.05
+                ghost.speed = 0.03
             else:
-                ghost.speed = 0.08
+                ghost.speed = 0.05
             if ghost.state == GhostState.DEAD:
                 continue
             if ghost.destx == -1:
