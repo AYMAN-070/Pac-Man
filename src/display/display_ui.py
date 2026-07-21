@@ -241,10 +241,9 @@ class DisplayUI(BaseDisplay):
                 self.text = self.text[:19]
                 txt = self.text
             w, c_size = self.get_str_sizes(txt)
-            y = 100 + c_size * 2 + 30
-            if txt:
-                self.draw_text(txt, int(self.midxy[0] - w / 2), y, w,
-                               c_size * 3, self.font3, "white")
+            y = self.midxy[1] - 350
+            self.draw_text(txt, int(self.midxy[0] - w / 2), y, w,
+                           c_size * 3, self.font3, "white")
 
         dst = s2.SDL_Rect(int(self.midxy[0] - 400), self.midxy[1] - 200,
                           800, 400)
