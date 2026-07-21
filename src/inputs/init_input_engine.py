@@ -23,8 +23,8 @@ class D(IntEnum):  # DEFAULT
     Defines the initial width (w) and height (h) in pixels.
     """
 
-    w = 1600
-    h = 1300
+    w = 1200
+    h = 900
 
 
 class InputError(Exception):

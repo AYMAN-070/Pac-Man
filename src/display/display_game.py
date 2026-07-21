@@ -25,27 +25,6 @@ class DisplayGame(BaseDisplay):
     # text: str
     # i: int
 
-    def draw_cell(self, cell: str, x: int, y: int) -> None:
-        """
-        Renders a static maze cell (wall, pacgum, megapacgum)
-        at the given coordinates. """
-
-        dst = s2.SDL_Rect(x, y, self.cell, self.cell)
-        s2.SDL_RenderCopy(self.renderer, self.t[cell], None, dst)
-
-    def draw_wall_borders(self, cell_val: int, x: int, y: int) -> None:
-        """ draw just EST et SOUTH to avoid double"""
-        thickness = max(2, int(self.cell / 4))
-        # 2 = Est, 4 = Sud
-        if cell_val & 2:  # EST
-            dst = s2.SDL_Rect(x + self.cell - thickness, y, thickness,
-                              self.cell)
-            s2.SDL_RenderCopy(self.renderer, self.t["wall"], None, dst)
-        if cell_val & 4:  # SUD
-            dst = s2.SDL_Rect(x, y + self.cell - thickness, self.cell,
-                              thickness)
-            s2.SDL_RenderCopy(self.renderer, self.t["wall"], None, dst)
-
     def draw_pacman(self, padx: int, pady: int) -> None:
         """
         Renders the Pac-Man sprite based on his current direction
@@ -305,41 +284,57 @@ class DisplayGame(BaseDisplay):
             startx = int(self.midxy[0] - len(self.maze[0]) / 2 * self.cell)
             starty = 90
             posy = starty
-        thickness = max(2, int(self.cell / 4))
 
-        maze_height = len(self.maze)
-        maze_width = len(self.maze[0]) if maze_height > 0 else 0
+        half_wall = int(self.cell / 10)
+        mazeleny = len(self.maze)
+        mazelenx = len(self.maze[0])
 
-        # Mur Nord complet
-        dst_n = s2.SDL_Rect(startx, starty, maze_width * self.cell, thickness)
-        s2.SDL_RenderCopy(self.renderer, self.t["wall"], None, dst_n)
-
-        # Mur Ouest complet
-        dst_w = s2.SDL_Rect(startx, starty, thickness, maze_height * self.cell)
-        s2.SDL_RenderCopy(self.renderer, self.t["wall"], None, dst_w)
-
-        for y in range(len(self.maze)):
+        for y in range(mazeleny):
             posx = startx
-            for x in range(len(self.maze[y])):
-                # 1. Dessiner les bordures (les murs)
+            # draw full-west wall
+            dst = s2.SDL_Rect(startx - half_wall, posy, half_wall * 2, self.cell)
+            s2.SDL_RenderCopy(self.renderer, self.t["wall"], None, dst)
+
+            for x in range(mazelenx):
+                # draw full-north wall
+                dst = s2.SDL_Rect(posx, starty - half_wall, self.cell, half_wall * 2)
+                s2.SDL_RenderCopy(self.renderer, self.t["wall"], None, dst)
+
+                # 1. draw east and south walls 
                 cell_wall = self.maze[y][x]
-                if cell_wall > 0:
-                    self.draw_wall_borders(cell_wall, posx, posy)
-                # 2. Dessiner les objets (depuis la nouvelle matrice items)
-                cell_item = self.engine.maze.items[y][x]
-                if cell_item == 2:  # PACGUM
-                    self.draw_cell("pacgum", posx, posy)
-                elif cell_item == 3:  # SUPERPACGUM
-                    if self.rotasprit > 3:
-                        s2.SDL_SetTextureColorMod(self.t["megapacgum"], 255,
-                                                  240, 100)
-                    elif self.rotasprit == 3:
-                        s2.SDL_SetTextureColorMod(self.t["megapacgum"], 255,
-                                                  247, 202)
-                    else:
-                        s2.SDL_SetTextureColorMod(self.t["megapacgum"], 255,
-                                                  255, 255)
-                    self.draw_cell("megapacgum", posx, posy)
+                if cell_wall == 15:
+                    dst = s2.SDL_Rect(posx, posy, self.cell, self.cell)
+                    s2.SDL_RenderCopy(self.renderer, self.t["wall"], None, dst)
+                else:
+                    # 2 = East, 4 = South
+                    if cell_wall & 2 and (x + 1 == mazelenx or self.maze[y][x + 1] != 15):
+                        dst = s2.SDL_Rect(posx + self.cell - half_wall, posy, half_wall * 2,
+                                          self.cell)
+                        s2.SDL_RenderCopy(self.renderer, self.t["wall"], None, dst)
+                    if cell_wall & 4 and (y + 1 == mazeleny or self.maze[y + 1][x] != 15):
+                        dst = s2.SDL_Rect(posx, posy + self.cell - half_wall, self.cell,
+                                          half_wall * 2)
+                        s2.SDL_RenderCopy(self.renderer, self.t["wall"], None, dst)
+
+                # 2. draw items 
+                match self.engine.maze.items[y][x]:
+                    case 2:  # PACGUM
+                        dst = s2.SDL_Rect(posx, posy, self.cell, self.cell)
+                        s2.SDL_RenderCopy(self.renderer, self.t["pacgum"], None, dst)
+
+                    case 3:  # SUPERPACGUM
+                        if self.rotasprit > 3:
+                            s2.SDL_SetTextureColorMod(self.t["megapacgum"], 255,
+                                                      240, 100)
+                        elif self.rotasprit == 3:
+                            s2.SDL_SetTextureColorMod(self.t["megapacgum"], 255,
+                                                      247, 202)
+                        else:
+                            s2.SDL_SetTextureColorMod(self.t["megapacgum"], 255,
+                                                      255, 255)
+                        dst = s2.SDL_Rect(posx, posy, self.cell, self.cell)
+                        s2.SDL_RenderCopy(self.renderer, self.t["megapacgum"], None, dst)
+
 
                 posx += self.cell
             posy += self.cell
