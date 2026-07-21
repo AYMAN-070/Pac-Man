@@ -152,6 +152,7 @@ class InitInputEngine:
         except Exception:
             self.free_all()
             raise
+        print("Game loaded correcly")
 
     def set_cell_size(self, w: int, h: int) -> None:
         """

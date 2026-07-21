@@ -85,6 +85,7 @@ class SDLCoreEngine(InitInputEngine):
                     display = self.d.display_and_compute_game
                     if self.previous != "escape":
                         if res != "reload":
+                            print("\nStarting new game")
                             self.engine = GameEngine(self.config_path)
                         self.player = self.engine.player
                         self.d.engine = self.engine
