@@ -255,7 +255,6 @@ class DisplayGame(BaseDisplay):
             if self.start:
                 self.engine.update(self.delta_time)
                 if level != self.engine.current_level:
-                    self.init_engine(self.engine.current_level)
                     return "reload"
         else:
             if self.midxy[0] <= self.shake_death:

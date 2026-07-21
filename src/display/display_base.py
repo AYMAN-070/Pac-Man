@@ -52,10 +52,9 @@ class BaseDisplay:
         self.cell = 0
         self.pov_rpg = False
         self.text = ""
-        self.score_trace = 0
+        self.score_trace = 1
         self.i = 0
         self.seed = 0
-        self.level = 0
         self.xyf = [0, 0]
         self.row = 1
         self.name = ""
@@ -88,7 +87,7 @@ class BaseDisplay:
                         "purple",
         ]
 
-    def init_engine(self, level: int) -> None:
+    def init_engine(self, score: int) -> None:
         """
         Resets and synchronizes the display variables with the current state
         of the game engine when a new level or attempt starts.  """
@@ -97,7 +96,7 @@ class BaseDisplay:
         self.maze = self.engine.maze.grid
         self.player = self.engine.player
         self.ghosts = self.engine.ghosts
-        self.score_trace = 0
+        self.score_trace = score
         self.sprits_rate = 0
         self.rotasprit = 1
         self.rotadeath = -0.1
@@ -105,7 +104,6 @@ class BaseDisplay:
             self.midxy[0] = self.shake_death
         self.shake_death = 0
         self.end = False
-        self.level = level
         self.xyf = [0, 0]
         self.row = 1
         for ghost in self.ghosts:

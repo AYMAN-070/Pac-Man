@@ -28,8 +28,9 @@ class InputProcesses(InitInputEngine):
                 self.engine.toggle_invincibility()
             case "/next":
                 self.text_mode = False
-                self.engine.cheat_next_level()
-                return "reload"
+                if self.engine.current_level != 10:
+                    self.engine.cheat_next_level()
+                    return "reload"
         return ""
 
     def newgame_keys(self, event: Any) -> str:

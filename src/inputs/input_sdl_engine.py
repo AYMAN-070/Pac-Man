@@ -88,7 +88,7 @@ class SDLCoreEngine(InitInputEngine):
                             self.engine = GameEngine(self.config_path)
                         self.player = self.engine.player
                         self.d.engine = self.engine
-                        self.d.init_engine(self.engine.current_level)
+                        self.d.init_engine(self.engine.score)
                         self.set_cell_size(
                             self.midxy[0] * 2, self.midxy[1] * 2)
                 case "escape":
@@ -161,7 +161,7 @@ class SDLCoreEngine(InitInputEngine):
                                 self.text_mode = False
 
             res = display()
+            limit_fps(start_frame, fps_limit)
             if res:
                 return res
-            limit_fps(start_frame, fps_limit)
         return ""
