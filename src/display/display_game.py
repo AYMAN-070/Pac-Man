@@ -66,32 +66,41 @@ class DisplayGame(BaseDisplay):
         if the ghosts are in the EDIBLE state.  """
 
         for i, ghost in enumerate(self.ghosts):
-            if not ghost.state == GhostState.DEAD:
-                color = self.ghost_color[ghost.color_id]
-                match ghost.direction:
-                    case "UP":
-                        row = 0
-                    case "LEFT":
-                        row = 2
-                    case "RIGHT":
-                        row = 3
-                    case _:
-                        row = 1
-                if ghost.state == GhostState.EDIBLE:
-                    if ghost.timer <= 2 and self.rotasprit > 3:
-                        s2.SDL_SetTextureColorMod(self.t[color], 198, 120, 235)
-                    else:
-                        s2.SDL_SetTextureColorMod(self.t[color], 110, 80, 220)
-                else:
-                    s2.SDL_SetTextureColorMod(self.t[color], 255, 255, 255)
 
-                col = ghost.rotasprit
-                w, h = 250, 250
-                src = s2.SDL_Rect(col * w, row * h, w, h)
-                dst = s2.SDL_Rect(int(ghost.xf * self.cell + padx),
-                                  int(ghost.yf * self.cell + pady),
-                                  self.cell, self.cell)
-                s2.SDL_RenderCopy(self.renderer, self.t[color], src, dst)
+            color = self.ghost_color[ghost.color_id]
+            match ghost.direction:
+                case "UP":
+                    row = 0
+                case "LEFT":
+                    row = 2
+                case "RIGHT":
+                    row = 3
+                case _:
+                    row = 1
+            if ghost.state == GhostState.EDIBLE:
+                if ghost.timer <= 2 and self.rotasprit > 3:
+                    s2.SDL_SetTextureColorMod(self.t[color], 198, 120, 235)
+                else:
+                    s2.SDL_SetTextureColorMod(self.t[color], 110, 80, 220)
+            else:
+                s2.SDL_SetTextureColorMod(self.t[color], 255, 255, 255)
+            if ghost.state == GhostState.DEAD:
+                if ghost.timer > 2:
+                    s2.SDL_SetTextureAlphaMod(self.t[color], 0)
+                elif self.rotasprit > 3:
+                    s2.SDL_SetTextureAlphaMod(self.t[color], 170)
+                else:
+                    s2.SDL_SetTextureAlphaMod(self.t[color], 120)
+            else:
+                s2.SDL_SetTextureAlphaMod(self.t[color], 255)
+
+            col = ghost.rotasprit
+            w, h = 250, 250
+            src = s2.SDL_Rect(col * w, row * h, w, h)
+            dst = s2.SDL_Rect(int(ghost.xf * self.cell + padx),
+                              int(ghost.yf * self.cell + pady),
+                              self.cell, self.cell)
+            s2.SDL_RenderCopy(self.renderer, self.t[color], src, dst)
 
     def draw_infos(self) -> None:
         """

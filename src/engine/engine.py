@@ -233,7 +233,9 @@ class GameEngine:
                 continue
             # If Pac-Man and a Ghost are on the exact same tile
             if hit_box_tolerence(ghost, pxf, pyf):
-                if ghost.state == GhostState.EDIBLE:
+                if self.cheat_invincible:
+                    ghost.die()
+                elif ghost.state == GhostState.EDIBLE:
                     # Pac-Man eats the ghost!<
                     self.score += self.config.settings.get("points_per_ghost",
                                                            200)
