@@ -1,6 +1,5 @@
 from typing import List
 import sys
-from engine.player import Direction
 try:
     import mazegenerator
     MAZE_GENERATOR_AVAILABLE = True

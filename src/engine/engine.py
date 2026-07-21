@@ -119,7 +119,6 @@ class GameEngine:
         # Load the first level
         self.load_level()
 
-
     def load_level(self) -> None:
         """
         Generates the maze and places the player and ghosts for current level.

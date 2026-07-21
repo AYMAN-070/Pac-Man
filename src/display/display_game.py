@@ -300,49 +300,63 @@ class DisplayGame(BaseDisplay):
         for y in range(mazeleny):
             posx = startx
             # draw full-west wall
-            dst = s2.SDL_Rect(startx - half_wall, posy, half_wall * 2, self.cell)
+            dst = s2.SDL_Rect(
+                    startx - half_wall, posy, half_wall * 2, self.cell)
             s2.SDL_RenderCopy(self.renderer, self.t["wall"], None, dst)
 
             for x in range(mazelenx):
                 # draw full-north wall
-                dst = s2.SDL_Rect(posx, starty - half_wall, self.cell, half_wall * 2)
+                dst = s2.SDL_Rect(
+                                posx, starty - half_wall,
+                                self.cell, half_wall * 2)
                 s2.SDL_RenderCopy(self.renderer, self.t["wall"], None, dst)
 
-                # 1. draw east and south walls 
+                # 1. draw east and south walls
                 cell_wall = self.maze[y][x]
                 if cell_wall == 15:
                     dst = s2.SDL_Rect(posx, posy, self.cell, self.cell)
                     s2.SDL_RenderCopy(self.renderer, self.t["wall"], None, dst)
                 else:
                     # 2 = East, 4 = South
-                    if cell_wall & 2 and (x + 1 == mazelenx or self.maze[y][x + 1] != 15):
-                        dst = s2.SDL_Rect(posx + self.cell - half_wall, posy, half_wall * 2,
-                                          self.cell)
-                        s2.SDL_RenderCopy(self.renderer, self.t["wall"], None, dst)
-                    if cell_wall & 4 and (y + 1 == mazeleny or self.maze[y + 1][x] != 15):
-                        dst = s2.SDL_Rect(posx, posy + self.cell - half_wall, self.cell,
-                                          half_wall * 2)
-                        s2.SDL_RenderCopy(self.renderer, self.t["wall"], None, dst)
+                    if cell_wall & 2 \
+                        and (
+                            x + 1 == mazelenx or self.maze[y][x + 1] != 15):
+                        dst = s2.SDL_Rect(
+                                        posx + self.cell - half_wall,
+                                        posy, half_wall * 2, self.cell)
+                        s2.SDL_RenderCopy(
+                                        self.renderer, self.t["wall"],
+                                        None, dst)
+                    if cell_wall & 4 and \
+                            (y + 1 == mazeleny or self.maze[y + 1][x] != 15):
+                        dst = s2.SDL_Rect(
+                                        posx, posy + self.cell - half_wall,
+                                        self.cell, half_wall * 2)
+                        s2.SDL_RenderCopy(
+                                        self.renderer,
+                                        self.t["wall"], None, dst)
 
-                # 2. draw items 
+                # 2. draw items
                 match self.engine.maze.items[y][x]:
                     case 2:  # PACGUM
                         dst = s2.SDL_Rect(posx, posy, self.cell, self.cell)
-                        s2.SDL_RenderCopy(self.renderer, self.t["pacgum"], None, dst)
+                        s2.SDL_RenderCopy(
+                                        self.renderer, self.t["pacgum"],
+                                        None, dst)
 
                     case 3:  # SUPERPACGUM
                         if self.rotasprit > 3:
-                            s2.SDL_SetTextureColorMod(self.t["megapacgum"], 255,
-                                                      240, 100)
+                            s2.SDL_SetTextureColorMod(self.t["megapacgum"],
+                                                      255, 240, 100)
                         elif self.rotasprit == 3:
-                            s2.SDL_SetTextureColorMod(self.t["megapacgum"], 255,
-                                                      247, 202)
+                            s2.SDL_SetTextureColorMod(self.t["megapacgum"],
+                                                      255, 247, 202)
                         else:
-                            s2.SDL_SetTextureColorMod(self.t["megapacgum"], 255,
-                                                      255, 255)
+                            s2.SDL_SetTextureColorMod(self.t["megapacgum"],
+                                                      255, 255, 255)
                         dst = s2.SDL_Rect(posx, posy, self.cell, self.cell)
-                        s2.SDL_RenderCopy(self.renderer, self.t["megapacgum"], None, dst)
-
+                        s2.SDL_RenderCopy(self.renderer, self.t["megapacgum"],
+                                          None, dst)
 
                 posx += self.cell
             posy += self.cell

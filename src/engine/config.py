@@ -55,7 +55,9 @@ class GameConfig:
             user_settings = json.loads(clean_content)
             for key, value in user_settings.items():
                 if key not in self.settings.keys():
-                    print(f"[WARNING] unknow key skipped : {key}", file=sys.stderr)
+                    print(
+                        f"[WARNING] unknow key skipped : {key}",
+                        file=sys.stderr)
                     continue
                 if key in self.settings:
                     self.settings[key] = value
@@ -130,28 +132,44 @@ class GameConfig:
 
             for key, elem in self.settings.items():
                 if user_settings.get(key) is None:
-                    print(f"[WARNING] missing key '{key}' set to: {elem}", file=sys.stderr)
-                elif key == "level" and isinstance(user_settings["level"], list):
-                    for i, one_lvl in enumerate(self.settings["level"], start=1):
+                    print(
+                        f"[WARNING] missing key '{key}' set to: {elem}",
+                        file=sys.stderr)
+                elif key == "level" and \
+                        isinstance(user_settings["level"], list):
+                    for i, one_lvl in enumerate(
+                                                self.settings["level"],
+                                                start=1):
                         if one_lvl not in user_settings["level"]:
-                            print(f"[WARNING] wrong level ({i}) set to: {one_lvl}", file=sys.stderr)
+                            print(
+                                f"[WARNING] wrong level ({i})"
+                                f" set to: {one_lvl}",
+                                file=sys.stderr)
                     if len(user_settings["level"]) > 10:
-                        print(f"[WARNING] too much levels, only 10 first used", file=sys.stderr)
+                        print(
+                            "[WARNING] too much levels, only 10 first used",
+                            file=sys.stderr)
                     if len(user_settings["level"]) < 10:
-                        print(f"[WARNING] not enought levels, last level knowed arguments used till level 10", file=sys.stderr)
+                        print(
+                            "[WARNING] not enought levels, "
+                            "last level knowed arguments used till level 10",
+                            file=sys.stderr)
                 elif elem != user_settings[key]:
-                    print(f"[WARNING] from '{key}' wrong value '{user_settings[key]}' set to: {elem}", file=sys.stderr)
+                    print(
+                        f"[WARNING] from '{key}' wrong value "
+                        f"'{user_settings[key]}' set to: {elem}",
+                        file=sys.stderr)
 
         except FileNotFoundError:
             print(f"[WARNING] The file '{self.filepath}' could not be found. "
                   f"Using default settings: {self.settings}", file=sys.stderr)
         except json.JSONDecodeError as e:
             print(f"[WARNING] The file '{self.filepath}' contains invalid JSON"
-                  f" ({e}). Using default settings: {self.settings}", file=sys.stderr)
+                  f" ({e}). Using default settings: {self.settings}",
+                  file=sys.stderr)
         except Exception as e:
             print(f"{e}[WARNING] Unexpected error while reading the config."
                   f" Using default settings: {self.settings}", file=sys.stderr)
-
 
         print(f"Configuration successfully loaded from {self.filepath}")
 
