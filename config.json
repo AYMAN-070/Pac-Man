@@ -2,48 +2,12 @@
   # Game parameters
   "highscore_filename": "highscores.json",
   "lives": 3,
-  "points_per_pacgum": 11,
-  "points_per_super_pacgum": 50,
-  "points_per_ghost": 200,
-  "seed": 42,
+  "points_per_pacgum": 15,
+  "points_per_super_pacgum": 60,
+  "points_per_ghost": 150,
+  "seed": 40,
   #Levels list
   "level":[
-      {
-         "width":16,
-         "height":16
-      },
-      {
-         "width":25,
-         "height":25
-      },
-      {
-         "width":31,
-         "height":31
-      },
-      {
-         "width":80,
-         "height":21
-      },
-      {
-         "width":45,
-         "height":23
-      },
-      {
-         "width":31,
-         "height":31
-      },
-      {
-         "width":50,
-         "height":55
-      },
-      {
-         "width":20,
-         "height":80
-      },
-      {
-         "width":80,
-         "height":80
-      },
       {
          "width":10,
          "height":10

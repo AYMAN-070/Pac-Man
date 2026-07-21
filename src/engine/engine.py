@@ -126,7 +126,7 @@ class GameEngine:
         """
         base_seed: int = self.config.settings.get("seed", 42)
         if self.current_level == 1:
-            seed = base_seed + self.current_level
+            seed = base_seed
         else:
             random.seed()
             seed = random.randint(0, 100000)
@@ -148,16 +148,16 @@ class GameEngine:
             self.player.set_new_level_start(start_x, start_y)
         if self.current_level == 1:
             self.ghosts = [
-                Ghost(1, 1, 0),                  # Top-Left
-                Ghost(width - 2, 1, 1),          # Top-Right
-                Ghost(1, height - 2, 2),         # Bottom-Left
-                Ghost(width - 2, height - 2, 3)  # Bottom-Right
+                Ghost(0, 0, 0),                  # Top-Left
+                Ghost(width - 1, 0, 1),          # Top-Right
+                Ghost(0, height - 1, 2),         # Bottom-Left
+                Ghost(width - 1, height - 1, 3)  # Bottom-Right
             ]
         else:
-            self.ghosts[0].reset_for_new_level(1, 1)
-            self.ghosts[1].reset_for_new_level(width - 2, 1)
-            self.ghosts[2].reset_for_new_level(1, height - 2)
-            self.ghosts[3].reset_for_new_level(width - 2, height - 2)
+            self.ghosts[0].reset_for_new_level(0, 0)
+            self.ghosts[1].reset_for_new_level(width - 1, 0)
+            self.ghosts[2].reset_for_new_level(0, height - 1)
+            self.ghosts[3].reset_for_new_level(width - 1, height - 1)
         empty_cells = width * height
         self.time_left = float(empty_cells / 2.5)
 
@@ -398,7 +398,7 @@ class GameEngine:
         self.time_left -= delta_time
         if self.time_left <= 0:
             if self.cheat_invincible:
-                self.time_left = 0
+                self.time_left = 1
             else:
                 self.is_game_over = True
                 print("Time's up! Game Over.")

@@ -33,8 +33,7 @@ class HighscoreManager:
                 else:
                     self.scores = []
         except (json.JSONDecodeError, IOError):
-            print("[WARNING] Can't read highscores file or corrupted format. "
-                  "Creating new one...", file=sys.stderr)
+            print("[WARNING] Can't read highscores file or corrupted format.", file=sys.stderr)
             self.scores = []
 
     def save_scores(self) -> None:

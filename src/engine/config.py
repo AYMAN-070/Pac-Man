@@ -54,6 +54,9 @@ class GameConfig:
             clean_content = self._remove_comments(raw_content)
             user_settings = json.loads(clean_content)
             for key, value in user_settings.items():
+                if key not in self.settings.keys():
+                    print(f"[WARNING] unknow key skipped : {key}", file=sys.stderr)
+                    continue
                 if key in self.settings:
                     self.settings[key] = value
             defaults_points = {
@@ -93,7 +96,7 @@ class GameConfig:
                     #  Width security
                     try:
                         w = int(lvl.get('width', 25))
-                        w = max(10, min(w, 60))
+                        w = max(10, min(w, 80))
                     except (ValueError, TypeError):
                         print(f"[WARNING] Level {i} width is invalid. "
                               f"Defaulting to 25.", file=sys.stderr)
@@ -102,7 +105,7 @@ class GameConfig:
                     # Height security
                     try:
                         h = int(lvl.get('height', 25))
-                        h = max(10, min(h, 60))
+                        h = max(10, min(h, 80))
                     except (ValueError, TypeError):
                         print(f"[WARNING] Level {i} height is invalid. "
                               f"Defaulting to 25.", file=sys.stderr)
@@ -117,17 +120,40 @@ class GameConfig:
 
                 self.settings['level'] = valid_levels
 
-            print(f"Configuration successfully loaded from {self.filepath}")
+                if not isinstance(self.settings['seed'], int):
+                    self.settings['seed'] = 42
+                if self.settings['seed'] < 1:
+                    self.settings['seed'] = 42
+
+                if not isinstance(self.settings["highscore_filename"], str):
+                    self.settings["highscore_filename"] = "highscores.json"
+
+            for key, elem in self.settings.items():
+                if user_settings.get(key) is None:
+                    print(f"[WARNING] missing key '{key}' set to: {elem}", file=sys.stderr)
+                elif key == "level" and isinstance(user_settings["level"], list):
+                    for i, one_lvl in enumerate(self.settings["level"], start=1):
+                        if one_lvl not in user_settings["level"]:
+                            print(f"[WARNING] wrong level ({i}) set to: {one_lvl}", file=sys.stderr)
+                    if len(user_settings["level"]) > 10:
+                        print(f"[WARNING] too much levels, only 10 first used", file=sys.stderr)
+                    if len(user_settings["level"]) < 10:
+                        print(f"[WARNING] not enought levels, last level knowed arguments used till level 10", file=sys.stderr)
+                elif elem != user_settings[key]:
+                    print(f"[WARNING] from '{key}' wrong value '{user_settings[key]}' set to: {elem}", file=sys.stderr)
 
         except FileNotFoundError:
             print(f"[WARNING] The file '{self.filepath}' could not be found. "
-                  f"Using default settings.", file=sys.stderr)
+                  f"Using default settings: {self.settings}", file=sys.stderr)
         except json.JSONDecodeError as e:
             print(f"[WARNING] The file '{self.filepath}' contains invalid JSON"
-                  f" ({e}). Using default settings.", file=sys.stderr)
-        except Exception:
-            print("[WARNING] Unexpected error while reading the config."
-                  "Using default settings.", file=sys.stderr)
+                  f" ({e}). Using default settings: {self.settings}", file=sys.stderr)
+        except Exception as e:
+            print(f"{e}[WARNING] Unexpected error while reading the config."
+                  f" Using default settings: {self.settings}", file=sys.stderr)
+
+
+        print(f"Configuration successfully loaded from {self.filepath}")
 
 
 if __name__ == "__main__":
