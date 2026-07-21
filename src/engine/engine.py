@@ -119,6 +119,7 @@ class GameEngine:
         # Load the first level
         self.load_level()
 
+
     def load_level(self) -> None:
         """
         Generates the maze and places the player and ghosts for current level.
@@ -137,20 +138,16 @@ class GameEngine:
         level_index = min(self.current_level - 1, len(levels_config) - 1)
         width: int = levels_config[level_index].get("width", 21)
         height: int = levels_config[level_index].get("height", 21)
-        if width % 2 == 0:
-            width += 1
-        if height % 2 == 0:
-            height += 1
         self.maze = Maze(width, height, seed)
+        start_x, start_y = self.maze.get_center_coord()
+        if self.maze.grid[start_y][start_x] == 1:
+            start_x += 1
         #   PLACE PLAYER
-        start_x: int = width // 2
-        start_y: int = height // 2
         lives: int = self.config.settings.get("lives", 3)
         if self.current_level == 1:
             self.player = Player(start_x, start_y, lives)
         else:
             self.player.set_new_level_start(start_x, start_y)
-        # PLACE GHOSTS
         if self.current_level == 1:
             self.ghosts = [
                 Ghost(1, 1, 0),                  # Top-Left
@@ -163,11 +160,7 @@ class GameEngine:
             self.ghosts[1].reset_for_new_level(width - 2, 1)
             self.ghosts[2].reset_for_new_level(1, height - 2)
             self.ghosts[3].reset_for_new_level(width - 2, height - 2)
-        empty_cells = 0
-        for y in range(height):
-            for x in range(width):
-                if not self.maze.is_wall(x, y):
-                    empty_cells += 1
+        empty_cells = width * height
         self.time_left = float(empty_cells / 2.5)
 
     def _move_player(self) -> None:
@@ -180,15 +173,13 @@ class GameEngine:
         for direction in directions_to_try:
             if direction == Direction.NONE:
                 continue
-            # Calculate the target coordinates
-            dx, dy = direction.value
-            target_x = self.player.x + dx
-            target_y = self.player.y + dy
             # If the desired cell is not a wall, we move!
-            if not self.maze.is_wall(target_x, target_y):
+            if self.maze.can_move(self.player.x, self.player.y,
+                                  direction.name):
+                dx, dy = direction.value
                 self.player.current_direction = direction
-                self.player.destx = target_x + 0.5
-                self.player.desty = target_y + 0.5
+                self.player.destx = self.player.x + dx + 0.5
+                self.player.desty = self.player.y + dy + 0.5
                 return
         # If both directions blocked by walls We stop
         self.player.current_direction = Direction.NONE
@@ -212,16 +203,16 @@ class GameEngine:
         px = self.player.x
         py = self.player.y
         # Look at what is on the ground at Pac-Man's exact location
-        current_cell = self.maze.grid[py][px]
-        if current_cell == 2:
+        current_item = self.maze.items[py][px]
+        if current_item == 2:
             # Pac-Man ate a normal pacgum
             self.score += self.config.settings.get("points_per_pacgum", 10)
-            self.maze.grid[py][px] = 0
-        elif current_cell == 3:
+            self.maze.items[py][px] = 0
+        elif current_item == 3:
             # Pac-Man ate a Super-pacgum
             self.score += self.config.settings.get("points_per_super_pacgum",
                                                    50)
-            self.maze.grid[py][px] = 0
+            self.maze.items[py][px] = 0
             # Make all ghosts edible!
             for ghost in self.ghosts:
                 ghost.set_edible()
@@ -275,7 +266,7 @@ class GameEngine:
         If yes, advances to next level
         """
         # We scan the grid to see if any items are left
-        for row in self.maze.grid:
+        for row in self.maze.items:
             if 2 in row:
                 return
         print(f"Level {self.current_level} Complete!")
@@ -297,9 +288,7 @@ class GameEngine:
         # We test all 4 possible directions
         for d in [Direction.UP, Direction.DOWN, Direction.LEFT,
                   Direction.RIGHT]:
-            dx, dy = d.value
-            # If is not a wall, it's a valid move
-            if not self.maze.is_wall(x + dx, y + dy):
+            if self.maze.can_move(x, y, d.name):
                 valid_dirs.append(d)
             if len(valid_dirs) > 1 and current_direction:
                 opposite = None
@@ -311,7 +300,6 @@ class GameEngine:
                     opposite = Direction.RIGHT
                 elif current_direction == "RIGHT":
                     opposite = Direction.LEFT
-                # we delete the opposit turn from the list
                 if opposite in valid_dirs:
                     valid_dirs.remove(opposite)
         return valid_dirs
@@ -330,10 +318,11 @@ class GameEngine:
                 return first_dir
             for d in [Direction.UP, Direction.DOWN,
                       Direction.LEFT, Direction.RIGHT]:
-                nx, ny = cx + d.value[0], cy + d.value[1]
-                if (nx, ny) not in visited and not self.maze.is_wall(nx, ny):
-                    visited.add((nx, ny))
-                    queue.append((nx, ny, first_dir if first_dir else d))
+                if self.maze.can_move(cx, cy, d.name):
+                    nx, ny = cx + d.value[0], cy + d.value[1]
+                    if (nx, ny) not in visited:
+                        visited.add((nx, ny))
+                        queue.append((nx, ny, first_dir if first_dir else d))
         return None
 
     def _move_ghosts(self) -> None:
@@ -342,9 +331,9 @@ class GameEngine:
         """
         for ghost in self.ghosts:
             if ghost.state == GhostState.EDIBLE:
-                ghost.speed = 0.05
+                ghost.speed = 0.03
             else:
-                ghost.speed = 0.08
+                ghost.speed = 0.05
             if ghost.state == GhostState.DEAD:
                 continue
             if ghost.destx == -1:
@@ -410,8 +399,11 @@ class GameEngine:
             return
         self.time_left -= delta_time
         if self.time_left <= 0:
-            self.is_game_over = True
-            print("Time's up! Game Over.")
+            if self.cheat_invincible:
+                self.time_left = 0
+            else:
+                self.is_game_over = True
+                print("Time's up! Game Over.")
             return
         # Update ghost timers
         for ghost in self.ghosts:
