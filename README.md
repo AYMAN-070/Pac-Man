@@ -51,7 +51,9 @@ uv run python src/pac-man.py config.json
 |---|---|
 | Arrow keys / WASD | Move Pac-Man |
 | Escape | Pause / open pause menu |
-| `/cheat` + Enter | Toggle invincibility + increase player speed (×1.5) |
+| `/cheat` + Enter | Enable invincibility (ghosts can't kill Pac-Man) and boost player speed by ×1.25 each time it's entered (repeatable, capped at max speed) |
+| `/speed` + Enter | Instantly set player speed to a fixed fast value |
+| `/slow` + Enter | Slightly decrease player speed (repeatable) |
 | `/next` + Enter | Skip to next level |
 
 ---
@@ -61,7 +63,7 @@ uv run python src/pac-man.py config.json
 The game is highly customizable via the `config.json` file.
 Default
 * **Robust Parsing**: Our parser safely handles comments starting with `#` (which standard JSON does not support) and automatically applies secure fallback values if keys are missing or invalid.
-* **Dynamic Balancing**: Instead of static global timers, the engine calculates the time limit for each level dynamically based on the walkable area (`time = accessible_cells / 2.5`).
+* **Dynamic Balancing**: Instead of static global timers, the engine calculates the time limit for each level dynamically based on the total grid size (`time = (width × height) / 1.4`).
 
 The game reads its settings from a JSON file passed as a command-line argument (default: `config.json`). Lines starting with `#` are treated as comments and ignored.
 
@@ -74,12 +76,12 @@ The game reads its settings from a JSON file passed as a command-line argument (
 | `points_per_pacgum` | int | `10` | Points for eating a pacgum (1–100000) |
 | `points_per_super_pacgum` | int | `50` | Points for eating a super-pacgum (1–100000) |
 | `points_per_ghost` | int | `200` | Points for eating an edible ghost (1–100000) |
-| `seed` | int | `42` | Base seed for maze generation |
+| `seed` | int | `42` | Base seed for maze generation (only used for level 1, see below) |
 | `level` | list | see below | Per-level width/height configuration |
 
 ### Level configuration
 
-Each entry in the `level` list defines the maze dimensions for that level. Width and height are clamped to `[10, 80]` and automatically adjusted to be odd numbers (required by the maze generator).
+Each entry in the `level` list defines the maze dimensions for that level. Width and height are clamped to `[10, 65]`; invalid or out-of-range values are automatically replaced with a safe default.
 
 ```json
 {
@@ -109,15 +111,13 @@ This approach was chosen for its simplicity and portability: no database is need
 
 ## Maze Generation
 
-Mazes are generated using the bundled **A-Maze-ing** (`mazegenerator`) package, which produces imperfect mazes using a configurable seed. The generation pipeline works as follows:
+Mazes are generated using the bundled **A-Maze-ing** (`mazegenerator`) package, which produces imperfect mazes from a given seed. The generation pipeline works as follows:
 
-1. The external generator is called with a seed derived from `base_seed + current_level`, ensuring reproducible mazes (level 1 is always the same, subsequent levels are random but deterministic per seed).
-2. The raw output (a grid encoded with bitflags for wall directions) is parsed and scaled to the target width/height defined in the config.
-3. The center area is carved out and the **42 logo** is drawn in walls as an easter egg.
-4. A flood-fill from the center ensures all four ghost-spawn corners are reachable, carving corridors where necessary.
-5. Super-pacgums are placed in the 4 corners, and regular pacgums fill all remaining reachable corridors.
+1. The external generator is called with the level's width/height from the config. **Level 1 always uses the `seed` value from the config file**, so its maze is identical every run. **From level 2 onward, a fresh random seed is drawn each time the level loads**, so those mazes are randomized on every playthrough and are not reproducible via the config seed.
+2. The raw output (a grid encoded with bitflags for wall directions: 1=up, 2=right, 4=down, 8=left) is parsed into the internal grid at the target width/height.
+3. Super-pacgums are placed in the 4 corners of the grid, regular pacgums fill every other non-wall cell, and the center cell (the player's spawn point) is cleared of items.
 
-If the external generator fails for any reason, a basic fallback grid (checkerboard of walls) is used instead, and the same post-processing steps are applied.
+If the external generator is unavailable or fails for any reason, a fallback checkerboard-style grid is generated instead, and the same item-placement step is applied.
 
 ---
 
@@ -131,7 +131,7 @@ The game does not start moving until the player presses a directional key for th
 
 ### Movement system
 
-Both Pac-Man and ghosts use a **rail movement** system (`rail_movements` / `update_pos`): entities move toward a discrete grid destination cell, passing through the center of each cell to ensure clean directional changes. Speed is expressed in cells/frame and excess movement (overshoot) is carried over to the next step.
+Both Pac-Man and ghosts use a **rail movement** system (`rail_movements` / `update_pos`): entities move toward a discrete grid destination cell, passing through the center of each cell to ensure clean directional changes. Speed is expressed in cells/frame and excess movement (overshoot) is carried over to the next movement phase.
 
 ### Ghost AI
 
@@ -191,7 +191,9 @@ Cheat codes are entered via the in-game text input (press `/` to open, then type
 
 | Command | Effect |
 |---|---|
-| `/cheat` | Toggle invincibility (ghosts cannot kill Pac-Man) + increase player speed (×1.5) |
+| `/cheat` | Enable invincibility (ghosts cannot kill Pac-Man) and increase player speed by ×1.25 each time it's entered (repeatable, speed is capped at a maximum) |
+| `/speed` | Instantly set player speed to a fixed fast value |
+| `/slow` | Slightly decrease player speed (repeatable) |
 | `/next` | Immediately skip to the next level |
 
 These are designed to let peer reviewers quickly test all game features without playing through every level.
