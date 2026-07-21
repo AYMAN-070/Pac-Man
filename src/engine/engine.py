@@ -159,7 +159,7 @@ class GameEngine:
             self.ghosts[2].reset_for_new_level(0, height - 1)
             self.ghosts[3].reset_for_new_level(width - 1, height - 1)
         empty_cells = width * height
-        self.time_left = float(empty_cells / 2.5)
+        self.time_left = float(empty_cells / 1.5)
 
     def _move_player(self) -> None:
         """
@@ -208,6 +208,8 @@ class GameEngine:
             self.maze.items[py][px] = 0
         elif current_item == 3:
             # Pac-Man ate a Super-pacgum
+            for ghost in self.ghosts:
+                ghost.destx = -1
             self.score += self.config.settings.get("points_per_super_pacgum",
                                                    50)
             self.maze.items[py][px] = 0

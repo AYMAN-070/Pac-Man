@@ -24,9 +24,15 @@ class InputProcesses(InitInputEngine):
         match self.d.text:
             case "/cheat":
                 self.text_mode = False
-                self.player.speed = self.player.speed * 1.2
+                self.player.speed = self.player.speed * 1.25
+                if self.player.speed > 1:
+                    self.player.speed = 1
                 if not self.engine.cheat_invincible:
                     self.engine.toggle_invincibility()
+            case "/slow":
+                self.player.speed -= 0.01
+            case "/speed":
+                self.player.speed = 0.1
             case "/next":
                 self.text_mode = False
                 if self.engine.current_level != 10:

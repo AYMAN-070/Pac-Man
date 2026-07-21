@@ -96,7 +96,7 @@ class GameConfig:
                     #  Width security
                     try:
                         w = int(lvl.get('width', 25))
-                        w = max(10, min(w, 80))
+                        w = max(10, min(w, 65))
                     except (ValueError, TypeError):
                         print(f"[WARNING] Level {i} width is invalid. "
                               f"Defaulting to 25.", file=sys.stderr)
@@ -105,7 +105,7 @@ class GameConfig:
                     # Height security
                     try:
                         h = int(lvl.get('height', 25))
-                        h = max(10, min(h, 80))
+                        h = max(10, min(h, 65))
                     except (ValueError, TypeError):
                         print(f"[WARNING] Level {i} height is invalid. "
                               f"Defaulting to 25.", file=sys.stderr)
