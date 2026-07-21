@@ -43,7 +43,7 @@ def update_pos(entity: Ghost | Player, pos: str, goal: float,
 def rail_movements(entity: Ghost | Player) -> None:
     """ move to a destination """
 
-    # Use move method before use _rail_movements
+    # Use move method before use rail_movements
 
     move = True
     speed = entity.speed
@@ -159,7 +159,7 @@ class GameEngine:
             self.ghosts[2].reset_for_new_level(0, height - 1)
             self.ghosts[3].reset_for_new_level(width - 1, height - 1)
         empty_cells = width * height
-        self.time_left = float(empty_cells / 1.5)
+        self.time_left = float(empty_cells / 1.4)
 
     def _move_player(self) -> None:
         """
