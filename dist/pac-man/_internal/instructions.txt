@@ -1,0 +1,16 @@
+PAC-MAN - 42 PROJECT
+====================
+
+RULES:
+- Use Arrow Keys or <W,A,S,D> to move Pac-Man.
+- Eat everything you can.
+- Beat the 10 levels
+
+CONFIGURATION:
+
+- Only work on linux
+
+Launch the game with the command : ./pac-man config.json
+To launch the game be sure the executable is in the same directory than assets folder.
+
+You can edit the "config.json" file to change the number of lives, the random seed, or the score values and more.
