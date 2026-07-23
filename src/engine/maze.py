@@ -53,30 +53,6 @@ class Maze:
             self._create_dummy_grid()
         self._place_items()
 
-    def find_real_center(self) -> tuple[int, int]:
-        """Find the center of the actual play area """
-        # calculate the average of the coordinates of all cells that are paths
-        paths = [(x, y) for y in range(self.height)
-                 for x in range(self.width) if self.grid[y][x] == 0]
-
-        if not paths:
-            return (self.width // 2, self.height // 2)
-
-        sum_x = sum(p[0] for p in paths)
-        sum_y = sum(p[1] for p in paths)
-        center_x = int(sum_x / len(paths))
-        center_y = int(sum_y / len(paths))
-
-        # We return the "square" closest to this center of mass
-        best_pos = (center_x, center_y)
-        min_dist = float('inf')
-        for x, y in paths:
-            dist = (x - center_x)**2 + (y - center_y)**2
-            if dist < min_dist:
-                min_dist = dist
-                best_pos = (x, y)
-        return best_pos
-
     def _create_dummy_grid(self) -> None:
         """Create a simple maze if the generator crashes."""
         self.grid = [[15 for _ in range(self.width)]
